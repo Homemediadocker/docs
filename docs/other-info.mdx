@@ -1,0 +1,182 @@
+---
+id: other-info
+title: Other Info
+description: Other Information
+sidebar_position: 99
+---
+
+# Other Info
+
+## Trakt TV Lists Sync
+
+[Trakt](https://trakt.tv) is a freemium service that houses a bunch of content. You can setup all these services with Trakt (in some way) and have it keep track of your Watch history, playstates, and collection information.
+
+Trakt is super useful for something like adding a piece of content to your WatchList and then configuring something like Sonarr or Radarr (above) to pull in that information and watch for that content to become available.
+
+**This is not required**, but it's something I have used for years and love the integration I get with my family able to also simply add something to a list.
+
+[Create an account](https://trakt.tv/auth/join), it's free. Give it a try! It's a lot to consume off the bat, so it isn't required. But It is definitely useful if you lose the databases on your Sonarr/Radarr. You can just configure the watchlist to pull in the data and it'll seamlessly repopulate data.
+
+## NVIDIA Setup on Linux (Debian) Based Systems with a docker container
+
+I followed [this page](https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/latest/install-guide.html) for the latest NVIDIA Container Toolkit instructions and installing. `nvidia-ctk` is a utility built to give nvidia graphics capabilities into containers seamlessly.
+
+> Uninstalling nvidia drivers from your system can be done [like this](https://lunux.net/how-to-uninstall-nvidia-drivers-in-ubuntu/).
+
+> A quick install of the nvidia drivers for Ubuntu 22.04 can be found [here](https://askubuntu.com/a/1456466)
+
+`nvidia-ctk` should setup the `/etc/docker/daemon.json` or the `~/.config/docker/daemon.json` for you, but this is what my working config looks like for reference:
+
+```json
+{
+    "default-runtime": "nvidia",
+    "features": {
+        "cdi": true
+    },
+    "runtimes": {
+        "nvidia": {
+            "args": [],
+            "path": "nvidia-container-runtime"
+        }
+    }
+}
+```
+
+Be sure to set the devices in your `docker-compose.yml` to be like this for the emby container to recognize them in the `nvidia-smi`
+
+```yaml
+    devices:
+      - /dev/nvidia-uvm:/dev/nvidia-uvm # Added nvidia devices here
+      - /dev/nvidia-uvm-tools:/dev/nvidia-uvm-tools # Added nvidia devices here
+      - /dev/nvidia-modeset:/dev/nvidia-modeset # Added nvidia devices here
+      - /dev/nvidiactl:/dev/nvidiactl # Added nvidia devices here
+      - /dev/nvidia0:/dev/nvidia0 # Added nvidia devices here
+      - /dev/nvidia1:/dev/nvidia1 # Added nvidia devices here (i have a 2nd GPU so i needed this too)
+      - /dev/dri:/dev/dri # For VAAPI access, not necessarily for NVIDIA cards
+```
+
+
+
+### NVIDIA Quick Reference
+
+If you ever lose your nvidia transcoding from emby, you can try a few things:
+
+- Reboot the system. This will solve it 99% of the time
+- Reinstall the NVIDIA Drivers from the web
+- Reinstall the NVIDIA Drivers from the apt repository
+
+```bash
+sudo apt-get install nvidia-driver-535 -y
+# or install nvidia-driver-### where your number is the current version
+```
+
+- Run `nvidia-smi` (Output should be similar to below)
+
+```bash
+$ nvidia-smi
+Fri Apr  5 14:58:16 2024
++---------------------------------------------------------------------------------------+
+| NVIDIA-SMI 535.161.07             Driver Version: 535.161.07   CUDA Version: 12.2     |
+|-----------------------------------------+----------------------+----------------------+
+| GPU  Name                 Persistence-M | Bus-Id        Disp.A | Volatile Uncorr. ECC |
+| Fan  Temp   Perf          Pwr:Usage/Cap |         Memory-Usage | GPU-Util  Compute M. |
+|                                         |                      |               MIG M. |
+|=========================================+======================+======================|
+|   0  NVIDIA GeForce GTX 1080        Off | 00000000:24:00.0 Off |                  N/A |
+|  0%   41C    P8              11W / 180W |      2MiB /  8192MiB |      0%      Default |
+|                                         |                      |                  N/A |
++-----------------------------------------+----------------------+----------------------+
+|   1  NVIDIA GeForce GTX 1080        Off | 00000000:25:00.0 Off |                  N/A |
+|  0%   34C    P8               5W / 180W |      2MiB /  8192MiB |      0%      Default |
+|                                         |                      |                  N/A |
++-----------------------------------------+----------------------+----------------------+
+
++---------------------------------------------------------------------------------------+
+| Processes:                                                                            |
+|  GPU   GI   CI        PID   Type   Process name                            GPU Memory |
+|        ID   ID                                                             Usage      |
+|=======================================================================================|
+|  No running processes found                                                           |
++---------------------------------------------------------------------------------------+
+```
+
+- Check for persistence: (if this is disabled or failed then this could be your issue)
+
+```bash
+sudo systemctl status nvidia-persistenced
+```
+
+### Failed to initialize NVML: Failed to Initialize in Docker
+
+This error may occur inside of the emby docker container where it will not register `nvidia-smi` or any associated video cards. I reported this to `linuxserver.io` in their github as an issue here: [docker-emby:#41](https://github.com/linuxserver/docker-emby/issues/97).
+
+#### Error:
+
+```bash
+$ docker exec -it emby /bin/bash
+root@5a15af76e670:/# nvidia-smi
+Failed to initialize NVML: Unknown Error
+```
+
+### Solution
+
+TLDR - solved this [in Discord](https://discord.com/channels/354974912613449730/1226289649530568725) for anyone that comes across this in google and wants to try this solution. 
+
+The container wouldn't initialize the `nvidia-smi` and any cards associated with it. So mapping the nvidia stuff directly (as seen [in the comment above](https://github.com/linuxserver/docker-emby/issues/97#issuecomment-2041262711) in the docker command) is what ultimately solved it. 
+
+>--device=/dev/nvidia-uvm \
+    --device=/dev/nvidia-uvm-tools \
+    --device=/dev/nvidia-modeset \
+    --device=/dev/nvidiactl \
+    --device=/dev/nvidia0 \
+    --device=/dev/nvidia1 \
+
+In my docker compose it looks like this:
+
+```yaml
+  emby:
+    image: lscr.io/linuxserver/emby:latest
+    container_name: emby
+    environment:
+      - PUID=${EMBY_UID}
+      - PGID=${EMBY_GID}
+      - NVIDIA_VISIBLE_DEVICES=all
+      - NVIDIA_DRIVER_CAPABILITIES=all
+      - TZ=${TIMEZONE}
+    volumes:
+      - ./.containers/Emby:/config # Configuration directory
+      - ./images/logowhite.png:/app/emby/system/dashboard-ui/modules/logoscreensaver/logowhite.png 
+      - ./images/logowhite.png:/app/emby/system/dashboard-ui/modules/themes/logowhite.png 
+      - ./images/logodark.png:/app/emby/system/dashboard-ui/modules/themes/logodark.png 
+      - ${LOCAL_TV_PATH}:/media/Synology/Television # Media directory
+      - ${LOCAL_MOVIES_PATH}:/media/Synology/Movies # Media directory
+      - ${LOCAL_BACKUPS_PATH}:/media/Synology/Backups #Backups Directory
+      - /ssl/fullchain.pem:/ssl/fullchain.pem
+      - /ssl/privkey.pem:/ssl/privkey.pem
+      - /ssl/token:/ssl/token
+    ports:
+      - ${EMBY_HOST_PORT}:8096 #http port
+      - ${EMBY_HOST_PORT_SSL}:8920 #ssl port
+    runtime: nvidia
+    restart: unless-stopped
+    devices:
+      - /dev/nvidia-uvm:/dev/nvidia-uvm # Added nvidia devices here
+      - /dev/nvidia-uvm-tools:/dev/nvidia-uvm-tools # Added nvidia devices here
+      - /dev/nvidia-modeset:/dev/nvidia-modeset # Added nvidia devices here
+      - /dev/nvidiactl:/dev/nvidiactl # Added nvidia devices here
+      - /dev/nvidia0:/dev/nvidia0 # Added nvidia devices here
+      - /dev/nvidia1:/dev/nvidia1 # Added nvidia devices here (i have a 2nd GPU so i needed this too)
+      - /dev/dri:/dev/dri # I added this per suggestion, but this is for VAAPI so i don't know if this actually works -- this was what was failing before. 
+    profiles:
+      - emby
+```
+
+### Screenshots
+
+`nvidia-smi` in the container:
+
+<img width="806" alt="Screenshot 2024-04-07 at 12 01 21 PM" src="https://github.com/linuxserver/docker-emby/assets/18407074/6df72d77-6e1f-493a-8087-3a45173bdeb1" />
+
+Inside of emby in the transcoding section:
+
+<img width="985" alt="Screenshot 2024-04-07 at 12 01 41 PM" src="https://github.com/linuxserver/docker-emby/assets/18407074/cf539cff-cc93-47ce-8f51-e7032887fc64" />

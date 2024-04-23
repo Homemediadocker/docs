@@ -1,0 +1,8 @@
+{
+  "label": "Home Media Containers",
+  "position": 2,
+  "link": {
+    "type": "generated-index",
+    "description": "The https://www.linuxserver.io/ images have been faithfully pulling the architecture correctly for intel and ARM based macs automatically without specifying the architecture."
+  }
+}

@@ -1,0 +1,102 @@
+---
+id: pvr-clients
+title: PVR (Automation) Clients
+description: Automate all content gathering
+sidebar_position: 3
+---
+
+:::info Information
+These clients are for gathering content and watching for new releases of content. They will scrape the internet once configured and grab new items for you.
+:::
+
+## Sonarr
+
+- Just Sonarr Commands
+- Sonarr is a TV Show PVR and automation utility
+
+| Type     | Command                       |
+| -------- | ----------------------------- |
+| Start    | `docker compose up sonarr -d` |
+| Shutdown | `docker compose down sonarr`  |
+
+<img src="/Home-Media-Docker/img/sonarr.png" alt="sonarr" />
+
+- Once started, Sonarr should be hit from this url:
+- It is mobile responsive but if you want an app for all of this, you can add Sonarr as a client in this App on Android: [nzb360](https://nzb360.com/).
+- This is cross platform, but achieves a similar result: [LunaSea](https://www.lunasea.app/)
+
+|                                                                | URL                                                                     |
+| -------------------------------------------------------------- | ----------------------------------------------------------------------- |
+| SSL (if you [enable it](https://nzbdrone.readthedocs.io/SSL/)) | http://localhost:9898                                                   |
+| Non-SSL                                                        | http://localhost:8989                                                   |
+| Image                                                          | [linuxserver/sonarr](https://docs.linuxserver.io/images/docker-sonarr/) |
+
+### Sonarr Example Docker Compose
+
+```yaml
+services:
+  sonarr:
+    image: lscr.io/linuxserver/sonarr:latest
+    container_name: sonarr
+    environment:
+      - PUID=${UID}
+      - PGID=${GID}
+      - TZ=${TIMEZONE}
+    volumes:
+      - ./.containers/Sonarr:/config
+      - ${LOCAL_TV_PATH}:/tv # optional but needed to map external data
+      - ${LOCAL_DOWNLOADS_PATH}:/downloads # optional but needed to map external data
+    ports:
+      - ${SONARR_HOST_PORT}:8989
+      - ${SONARR_HOST_PORT_SSL}:9898 # ssl port if you enable it
+    restart: unless-stopped
+    depends_on:
+      - prowlarr
+    networks:
+      - default
+```
+
+## Radarr
+
+- Just Radarr Commands
+- Radarr is a Movie PVR and automation utility
+- It is mobile responsive but if you want an app for all of this, you can add Radarr as a client in this App on Android: [nzb360](https://nzb360.com/).
+- This is cross platform, but achieves a similar result: [LunaSea](https://www.lunasea.app/)
+
+| Type     | Command                       |
+| -------- | ----------------------------- |
+| Start    | `docker compose up radarr -d` |
+| Shutdown | `docker compose down radarr`  |
+
+<img src="/Home-Media-Docker/img/radarr.png" alt="radarr" />
+
+- Once started, Radarr should be hit from this url:
+
+|         | URL                                                                     |
+| ------- | ----------------------------------------------------------------------- |
+| Non-SSL | http://localhost:7878                                                   |
+| Image   | [linuxserver/radarr](https://docs.linuxserver.io/images/docker-radarr/) |
+
+### Radarr Example Docker Compose
+
+```yaml
+services:
+  radarr:
+    image: lscr.io/linuxserver/radarr:latest
+    container_name: radarr
+    environment:
+      - PUID=${UID}
+      - PGID=${GID}
+      - TZ=${TIMEZONE}
+    volumes:
+      - ./.containers/Radarr:/config
+      - ${LOCAL_MOVIES_PATH}:/movies # optional but needed to map external data
+      - ${LOCAL_DOWNLOADS_PATH}:/downloads # optional but needed to map external data
+    ports:
+      - ${RADARR_HOST_PORT}:7878
+    restart: unless-stopped
+    depends_on:
+      - prowlarr
+    networks:
+      - default
+```

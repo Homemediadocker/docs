@@ -1,0 +1,32 @@
+---
+id: prerequisites
+title: Prerequisites
+description: Learn how to setup your docker environment for your homelab
+sidebar_position: 1
+---
+
+# Prerequisites
+
+## Downloading Docker Desktop (Windows/Mac/Linux Desktop)
+
+Download [Docker](https://www.docker.com/products/docker-desktop/) for your architecture.
+
+:::warning Linux Desktop Querks
+
+Just note that certain Linux distros (like Ubuntu or Pop_OS!) ship with `snapd` preinstalled. This causes issues since snapd is docker-based. You may need to [completely remove docker](../troubleshooting.mdx#docker-errors-and-cant-ever-completely-come-up) (this link will show you different troubleshooting options). 
+
+- snapd can be installed alongside docker, but it can cause issues with docker commands due to `apparmor` that comes with it. This is a security measure put in place with Ubuntu systems but it can cause the errors seen in the troubleshooting page above.
+- Docker Desktop _may_ conflict with the internal `snapd` docker engine. So be wary of installing it from source, you may want to install it from `snapd` itself.
+
+:::
+
+<img src="/Home-Media-Docker/img/docker-desktop.png" alt="docker-desktop" />
+
+## Downloading for a Linux Server Host Machine (Ubuntu - Debian)
+
+Since this could change, please see the [Docker Documentation](https://docs.docker.com/engine/install/ubuntu/#installation-methods) for the official installation steps to get back up and going. This will walk you through:
+
+- Adding a new PPA repository for `apt` to install from
+- Adding docker-ce and other utilities to the CLI in a server
+
+After executing the install above, be sure to look at the [Post Installation Steps](https://docs.docker.com/engine/install/linux-postinstall/) to execute docker commands as a non-root user without `sudo`

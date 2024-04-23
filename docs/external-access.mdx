@@ -1,0 +1,34 @@
+---
+id: external-access
+title: External Access
+description: Information related to creating a ddns or accessing your instances from outside your local network.
+sidebar_position: 80
+---
+
+# External Access
+
+If you care to setup your instance to be accessed outside of your home network, it is highly recommended to setup some sort of DDNS, and learn about changing ports on your router.
+
+:::warning DDNS Information
+
+If you choose to use a DDNS solution, be aware that this exposes your public IP Address to the world. Pick something you can remember, but an attacker will not think to try.
+
+:::
+
+## DDNS
+
+DDNS is a way of creating a symbolic link for your public IP Address. A few options exist to do this for free.
+
+### No-IP
+
+- [No-ip.com](https://noip.com) - this one is ddns.net. It is okay for trying out things, but it requires a paid subcription to maintain a DDNS address, or you have to renew it every 30 days (and it is annoying to do so).
+
+### DuckDNS
+
+I personally use [DuckDNS](https://www.duckdns.org/) because it is free. Also has a lot of support articles for doing things like adding SSL and everything to it with [Let's Encrypt](https://letsencrypt.org/).
+
+#### Setting up Acme.sh for LetsEncrypt
+
+I used [this](https://github.com/acmesh-official/acme.sh/wiki/dnsapi#27-use-duckdnsorg-api) utility - Acme.sh - to setup my ssl cert. I have this setup in a script to automatically refresh my cert every 45 days or so and check its health. This is in a cronjob on my host machine.
+
+This may also be an option - running acme.sh in the docker setup - [see here](https://gist.github.com/williamdes/a8f15c7acaa71cd4437c4a903784f0e1).

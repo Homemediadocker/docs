@@ -1,0 +1,8 @@
+{
+  "label": "Home Automation Containers",
+  "position": 3,
+  "link": {
+    "type": "generated-index",
+    "description": "Home Automation With Home Assistant"
+  }
+}

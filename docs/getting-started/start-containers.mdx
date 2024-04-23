@@ -1,0 +1,106 @@
+---
+id: start-containers
+title: Start the Containers
+description: Commands to spin up your environment
+sidebar_position: 3
+---
+
+:::info Note
+
+- The system data will be placed in this project directory by default if you change nothing
+- Data is placed in `./.containers/` and is in `.gitignore` already
+- Helper scripts can be found in [`./scripts`](https://github.com/Homemediadocker/Home-Media-Docker/blob/main/scripts/)
+- This original script was setup on a Macbook and runs flawlessly on MacOS and Linux (tested). My homelab uses Ubuntu 22.04 and docker (latest) and my Macbook is on MacOS Sonoma (latest).
+  - Additional configuration may be needed on the volumes in each service (container) section to setup for your machine (if you refer to different paths for an existing data folder and not a fresh install).
+
+:::
+
+## Start the Containers
+
+- Start the containers! (run the [`startup.sh`](https://github.com/Homemediadocker/Home-Media-Docker/blob/main/scripts/startup.sh) script or do this)
+
+:::danger Warning
+Since a Media server is a heavy resource to have, and there are 3 options in this project, you must pass one in as an argument in the [`docker-compose`](https://github.com/Homemediadocker/Home-Media-Docker/blob/main/docker-compose.yml) command (in `--profile`) or in the [`startup.sh`](https://github.com/Homemediadocker/Home-Media-Docker/blob/main/scripts/startup.sh) script as an argument.
+:::
+
+### No Media Server
+
+```sh
+docker compose up -d
+```
+
+**Or**
+
+```sh
+./scripts/startup.sh
+```
+
+#### Example using the [startup.sh](https://github.com/Homemediadocker/Home-Media-Docker/blob/main/scripts/startup.sh) script with no media server argument
+
+<img
+  src="/Home-Media-Docker/img/startup-no-media-server.png"
+  alt="startup doing its thing"
+/>
+<img
+  src="/Home-Media-Docker/img/startup-no-media-server-success.png"
+  alt="startup successful"
+/>
+
+### With Media Server (`jellyfin` as the example)
+
+```sh
+docker compose --profile jellyfin up -d
+```
+
+**Or**
+
+```sh
+./scripts/startup.sh jellyfin
+```
+
+#### Example using the [startup.sh](https://github.com/Homemediadocker/Home-Media-Docker/blob/main/scripts/startup.sh) script with `jellyfin` as the media server argument
+
+<img
+  src="/Home-Media-Docker/img/startup-jellyfin.png"
+  alt="startup doing its thing"
+/>
+<img
+  src="/Home-Media-Docker/img/startup-jellyfin-success.png"
+  alt="startup successful"
+/>
+
+## Stop All Containers
+
+### With Media Server Running (`jellyfin` as the example again)
+
+```sh
+docker compose --profile jellyfin down
+```
+
+**Or**
+
+```sh
+./scripts/tearDown.sh jellyfin
+```
+
+_See the [Scripts readme](https://github.com/Homemediadocker/Home-Media-Docker/blob/main/scripts/README.md) for more information about the teardownScript_
+
+### With No Media Server Running
+
+```sh
+docker compose down
+```
+
+**Or**
+
+```sh
+./scripts/tearDown.sh
+```
+
+_See the [Scripts readme](https://github.com/Homemediadocker/Home-Media-Docker/blob/main/scripts/README.md) for more information about the teardownScript_
+
+**Stop Individual Containers**
+
+```sh
+docker compose stop <container_name>
+```

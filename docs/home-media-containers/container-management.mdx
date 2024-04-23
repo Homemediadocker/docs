@@ -1,0 +1,62 @@
+---
+id: container-management
+title: Container Management
+description: Container mangaement with portainer.
+sidebar_position: 1
+---
+
+:::info Information
+This solution ships with `Portainer` - if you want to convert this to use `minikube` or some other solution then please do what you want!
+:::
+
+## Portainer
+
+- Portainer is just a web UI for managing your containers on a remote server (like on a linux server or a headless raspberry pi).
+- Portainer CE is free to use and is a great alternative when docker desktop isn't available due to a remote system being used.
+- It will look at your current running containers on your docker host and basically be exactly like Docker Desktop on a remote machine.
+
+* Just Portainer Commands
+* Portainer is a web client for managing your docker host containers, images, volumes, and networking, and much more.
+
+| Type     | Command                          |
+| -------- | -------------------------------- |
+| Start    | `docker compose up portainer -d` |
+| Shutdown | `docker compose down portainer`  |
+
+**Dashboard**
+
+<img src="/Home-Media-Docker/img/portainer-dashboard.png" alt="portainer" />
+
+**Containers**
+
+<img
+  src="/Home-Media-Docker/img/portainer-containers.png"
+  alt="portainer-containers"
+/>
+
+- Once started, Portainer should be hit from this url
+
+|                                | URL                                                                       |
+| ------------------------------ | ------------------------------------------------------------------------- |
+| Non-SSL                        | http://localhost:9000                                                     |
+| SSL (unsecured without a cert) | https://localhost:49443                                                   |
+| Image                          | [portainer/portainer-ce](https://hub.docker.com/r/portainer/portainer-ce) |
+
+### Portainer Docker Compose Example
+
+```yaml
+services:
+  ### Container management Web UI
+  portainer:
+    container_name: portainer
+    image: portainer/portainer-ce:latest
+    ports:
+      - ${PORTAINER_HOST_PORT}:9000 # webui for portainer (http)
+      - ${PORTAINER_HOST_PORT_SSL}:9443 # webui for portainer (https)
+    volumes:
+      - ./.containers/Portainer:/data
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ./.containers/ssl:/ssl
+    restart: unless-stopped
+
+```

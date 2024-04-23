@@ -1,0 +1,61 @@
+---
+id: backup-and-restore
+title: Backup and Restore
+description: This is a backup and restore option using Duplicati
+sidebar_position: 7
+---
+
+## Duplicati
+
+:::info Information
+
+- Duplicati is a Backup/Restore
+- Use this to setup your daily backups. Backups can be done locally, to NAS, or to an online cloud service of your choosing. [See here](https://homemediadocker.github.io/Home-Media-Docker/img/duplicati-backup-options.png) for all the options (photo).
+  :::
+
+- Just Duplicati Commands
+
+| Type     | Command                          |
+| -------- | -------------------------------- |
+| Start    | `docker compose up duplicati -d` |
+| Shutdown | `docker compose down duplicati`  |
+
+<img src="/Home-Media-Docker/img/duplicati-web.png" alt="duplicati" />
+
+- Once started, Duplicati should be hit from this url:
+
+|         | URL                                                                                             |
+| ------- | ----------------------------------------------------------------------------------------------- |
+| Non-SSL | http://localhost:8200                                                                           |
+| Image   | [linuxserver/duplicati](https://docs.linuxserver.io/images/docker-duplicati/#application-setup) |
+
+- Once you have backups setup (a manual procedure, but easy to do), you will be able to see a full dashboard of your backup data and a schedule that is very flexible and customizable.
+
+<img
+  src="/Home-Media-Docker/img/duplicati-with-backup-data.png"
+  alt="duplicati"
+/>
+
+### Duplicati Example Docker Compose
+
+```yaml
+services:
+  duplicati:
+    image: lscr.io/linuxserver/duplicati:latest
+    container_name: duplicati
+    network_mode: service:vpn
+    environment:
+      - PUID=${UID}
+      - PGID=${GID}
+      - TZ=${TIMEZONE}
+      - CLI_ARGS=${DUPLICATI_CLI_ARGS} #optional
+    volumes:
+      - ./.containers/Duplicati:/config
+      - ./.containers/Duplicati/backups:/backups
+      - ./.containers:/source ## Access to the directory where the container AppData is located
+    # ports:
+    #   - ${DUPLICATI_HOST_PORT}:8200
+    restart: unless-stopped
+    # depends_on:
+    #   - vpn
+```

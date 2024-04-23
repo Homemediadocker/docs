@@ -1,0 +1,100 @@
+---
+id: web-crawlers
+title: Web Crawlers
+description: These things will be your subscriptions to content feeds.
+sidebar_position: 4
+---
+
+## Prowlarr
+
+:::info Information
+Prowlarr integrates pretty seamlessly with [Sonarr and Radarr](./pvr-clients.mdx)
+:::
+
+- Just Prowlarr Commands
+- Prowlarr very tightly integrates with all the other `*Arr`'s.
+- Prowlarr is an Indexer crawler for things 😉
+
+| Type     | Command                         |
+| -------- | ------------------------------- |
+| Start    | `docker compose up prowlarr -d` |
+| Shutdown | `docker compose down prowlarr`  |
+
+<img src="/Home-Media-Docker/img/prowlarr.png" alt="prowlarr" />
+
+- Once started, Prowlarr should be hit from this url:
+
+|         | URL                                                                         |
+| ------- | --------------------------------------------------------------------------- |
+| Non-SSL | http://localhost:9696                                                       |
+| Image   | [linuxserver/prowlarr](https://docs.linuxserver.io/images/docker-prowlarr/) |
+
+### Prowlarr Example Docker Compose
+
+```yaml
+services:
+  prowlarr:
+    image: lscr.io/linuxserver/prowlarr:latest
+    container_name: prowlarr
+    environment:
+      - PUID=${UID}
+      - PGID=${GID}
+      - TZ=${TIMEZONE}
+    volumes:
+      - ./.containers/Prowlarr:/config
+    ports:
+      - ${PROWLARR_HOST_PORT}:9696
+    restart: unless-stopped
+    networks:
+      - default
+```
+
+## Jackett
+
+:::warning Important
+**(this is under its own `jackett` profile in the [docker-compose.yml](https://github.com/Homemediadocker/Home-Media-Docker/blob/main/docker-compose.yml#L145-L161)) and no longer maintained by the developers. The preferred crawler is Prowlarr**
+
+This will not spin up with the rest of the images by default. If you want to try Jackett, please spin it up on its own, or remove the `jackett` profile [here](https://github.com/Homemediadocker/Home-Media-Docker/blob/main/docker-compose.yml#L217-L233)
+
+:::
+
+- Just Jackett Commands
+- Jackett is very similar to Prowlarr, but Prowlarr is more stable and under more active development.
+- Jackett is an Indexer crawler for things 😉
+
+| Type     | Command                        |
+| -------- | ------------------------------ |
+| Start    | `docker compose up jackett -d` |
+| Shutdown | `docker compose down jackett`  |
+
+<img src="/Home-Media-Docker/img/jackett.png" alt="jackett" />
+
+- Once started, Jackett should be hit from this url:
+
+|         | URL                                                                       |
+| ------- | ------------------------------------------------------------------------- |
+| Non-SSL | http://localhost:9117                                                     |
+| Image   | [linuxserver/jackett](https://docs.linuxserver.io/images/docker-jackett/) |
+
+### Jackett Example Docker Compose
+
+```yaml
+services:
+  jackett: # This is an option if Prowlarr doesn't work correctly
+    image: lscr.io/linuxserver/jackett:latest
+    container_name: jackett
+    environment:
+      - PUID=${UID}
+      - PGID=${GID}
+      - TZ=${TIMEZONE}
+      - AUTO_UPDATE=${JACKETT_AUTO_UPDATE} #optional
+      - RUN_OPTS=${JACKETT_RUN_OPTS} #optional
+    volumes:
+      - ./.containers/Jackett:/config
+      - ${LOCAL_DOWNLOADS_PATH}:/downloads
+    ports:
+      - ${JACKETT_HOST_PORT}:9117
+    restart: unless-stopped
+    profiles:
+      - jackett
+```
