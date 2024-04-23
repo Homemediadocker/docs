@@ -50,9 +50,9 @@ services:
       - TZ=${TIMEZONE}
       - CLI_ARGS=${DUPLICATI_CLI_ARGS} #optional
     volumes:
-      - ./.containers/Duplicati:/config
-      - ./.containers/Duplicati/backups:/backups
-      - ./.containers:/source ## Access to the directory where the container AppData is located
+      - ${DEFAULT_CONTAINER_DATA_LOCATION}/Duplicati:/config
+      - ${DEFAULT_CONTAINER_DATA_LOCATION}/Duplicati/backups:/backups
+      - ${DEFAULT_CONTAINER_DATA_LOCATION}:/source ## Access to the directory where the container AppData is located
     # ports:
     #   - ${DUPLICATI_HOST_PORT}:8200
     restart: unless-stopped

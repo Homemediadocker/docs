@@ -47,6 +47,6 @@ services:
     ports:
       - ${JELLYSEERR_HOST_PORT}:5055
     volumes:
-      - ./.containers/Jellyseerr:/app/config
+      - ${DEFAULT_CONTAINER_DATA_LOCATION}/Jellyseerr:/app/config
     restart: unless-stopped
 ```

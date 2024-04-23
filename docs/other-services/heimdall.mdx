@@ -8,14 +8,14 @@ sidebar_position: 0
 ## Heimdall
 
 :::info Information
-Heimdall comes with the rest of the main containers. This is just a simple landing page configurator that allows users to build a landing page with their favorite links. 
+Heimdall comes with the rest of the main containers. This is just a simple landing page configurator that allows users to build a landing page with their favorite links.
 
 :::
 
 - Just Heimdall Commands
 
-| Type     | Command                              |
-| -------- | ------------------------------------ |
+| Type     | Command                         |
+| -------- | ------------------------------- |
 | Start    | `docker compose up heimdall -d` |
 | Shutdown | `docker compose down heimdall`  |
 
@@ -23,9 +23,9 @@ Heimdall comes with the rest of the main containers. This is just a simple landi
 
 - Once started, Heimdall should be hit from this url:
 
-|         | URL                                                                                          |
-| ------- | -------------------------------------------------------------------------------------------- |
-| Non-SSL | http://localhost:3080                                                                        |
+|         | URL                                                                         |
+| ------- | --------------------------------------------------------------------------- |
+| Non-SSL | http://localhost:3080                                                       |
 | Image   | [linuxserver/heimdall](https://docs.linuxserver.io/images/docker-heimdall/) |
 
 ### Heimdall Example Docker Compose
@@ -40,7 +40,7 @@ services:
       - PGID=${GID}
       - TZ=${TIMEZONE}
     volumes:
-      - ./.containers/Heimdall:/config
+      - ${DEFAULT_CONTAINER_DATA_LOCATION}/Heimdall:/config
     ports:
       - ${HEIMDALL_HOST_HTTP_PORT}:80
       - ${HEIMDALL_HOST_HTTPS_PORT}:443

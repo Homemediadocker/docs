@@ -29,33 +29,31 @@ I followed [this page](https://docs.nvidia.com/datacenter/cloud-native/container
 
 ```json
 {
-    "default-runtime": "nvidia",
-    "features": {
-        "cdi": true
-    },
-    "runtimes": {
-        "nvidia": {
-            "args": [],
-            "path": "nvidia-container-runtime"
-        }
+  "default-runtime": "nvidia",
+  "features": {
+    "cdi": true
+  },
+  "runtimes": {
+    "nvidia": {
+      "args": [],
+      "path": "nvidia-container-runtime"
     }
+  }
 }
 ```
 
 Be sure to set the devices in your `docker-compose.yml` to be like this for the emby container to recognize them in the `nvidia-smi`
 
 ```yaml
-    devices:
-      - /dev/nvidia-uvm:/dev/nvidia-uvm # Added nvidia devices here
-      - /dev/nvidia-uvm-tools:/dev/nvidia-uvm-tools # Added nvidia devices here
-      - /dev/nvidia-modeset:/dev/nvidia-modeset # Added nvidia devices here
-      - /dev/nvidiactl:/dev/nvidiactl # Added nvidia devices here
-      - /dev/nvidia0:/dev/nvidia0 # Added nvidia devices here
-      - /dev/nvidia1:/dev/nvidia1 # Added nvidia devices here (i have a 2nd GPU so i needed this too)
-      - /dev/dri:/dev/dri # For VAAPI access, not necessarily for NVIDIA cards
+devices:
+  - /dev/nvidia-uvm:/dev/nvidia-uvm # Added nvidia devices here
+  - /dev/nvidia-uvm-tools:/dev/nvidia-uvm-tools # Added nvidia devices here
+  - /dev/nvidia-modeset:/dev/nvidia-modeset # Added nvidia devices here
+  - /dev/nvidiactl:/dev/nvidiactl # Added nvidia devices here
+  - /dev/nvidia0:/dev/nvidia0 # Added nvidia devices here
+  - /dev/nvidia1:/dev/nvidia1 # Added nvidia devices here (i have a 2nd GPU so i needed this too)
+  - /dev/dri:/dev/dri # For VAAPI access, not necessarily for NVIDIA cards
 ```
-
-
 
 ### NVIDIA Quick Reference
 
@@ -120,11 +118,12 @@ Failed to initialize NVML: Unknown Error
 
 ### Solution
 
-TLDR - solved this [in Discord](https://discord.com/channels/354974912613449730/1226289649530568725) for anyone that comes across this in google and wants to try this solution. 
+TLDR - solved this [in Discord](https://discord.com/channels/354974912613449730/1226289649530568725) for anyone that comes across this in google and wants to try this solution.
 
-The container wouldn't initialize the `nvidia-smi` and any cards associated with it. So mapping the nvidia stuff directly (as seen [in the comment above](https://github.com/linuxserver/docker-emby/issues/97#issuecomment-2041262711) in the docker command) is what ultimately solved it. 
+The container wouldn't initialize the `nvidia-smi` and any cards associated with it. So mapping the nvidia stuff directly (as seen [in the comment above](https://github.com/linuxserver/docker-emby/issues/97#issuecomment-2041262711) in the docker command) is what ultimately solved it.
 
->--device=/dev/nvidia-uvm \
+> --device=/dev/nvidia-uvm \
+
     --device=/dev/nvidia-uvm-tools \
     --device=/dev/nvidia-modeset \
     --device=/dev/nvidiactl \
@@ -134,49 +133,57 @@ The container wouldn't initialize the `nvidia-smi` and any cards associated with
 In my docker compose it looks like this:
 
 ```yaml
-  emby:
-    image: lscr.io/linuxserver/emby:latest
-    container_name: emby
-    environment:
-      - PUID=${EMBY_UID}
-      - PGID=${EMBY_GID}
-      - NVIDIA_VISIBLE_DEVICES=all
-      - NVIDIA_DRIVER_CAPABILITIES=all
-      - TZ=${TIMEZONE}
-    volumes:
-      - ./.containers/Emby:/config # Configuration directory
-      - ./images/logowhite.png:/app/emby/system/dashboard-ui/modules/logoscreensaver/logowhite.png 
-      - ./images/logowhite.png:/app/emby/system/dashboard-ui/modules/themes/logowhite.png 
-      - ./images/logodark.png:/app/emby/system/dashboard-ui/modules/themes/logodark.png 
-      - ${LOCAL_TV_PATH}:/media/Synology/Television # Media directory
-      - ${LOCAL_MOVIES_PATH}:/media/Synology/Movies # Media directory
-      - ${LOCAL_BACKUPS_PATH}:/media/Synology/Backups #Backups Directory
-      - /ssl/fullchain.pem:/ssl/fullchain.pem
-      - /ssl/privkey.pem:/ssl/privkey.pem
-      - /ssl/token:/ssl/token
-    ports:
-      - ${EMBY_HOST_PORT}:8096 #http port
-      - ${EMBY_HOST_PORT_SSL}:8920 #ssl port
-    runtime: nvidia
-    restart: unless-stopped
-    devices:
-      - /dev/nvidia-uvm:/dev/nvidia-uvm # Added nvidia devices here
-      - /dev/nvidia-uvm-tools:/dev/nvidia-uvm-tools # Added nvidia devices here
-      - /dev/nvidia-modeset:/dev/nvidia-modeset # Added nvidia devices here
-      - /dev/nvidiactl:/dev/nvidiactl # Added nvidia devices here
-      - /dev/nvidia0:/dev/nvidia0 # Added nvidia devices here
-      - /dev/nvidia1:/dev/nvidia1 # Added nvidia devices here (i have a 2nd GPU so i needed this too)
-      - /dev/dri:/dev/dri # I added this per suggestion, but this is for VAAPI so i don't know if this actually works -- this was what was failing before. 
-    profiles:
-      - emby
+emby:
+  image: lscr.io/linuxserver/emby:latest
+  container_name: emby
+  environment:
+    - PUID=${EMBY_UID}
+    - PGID=${EMBY_GID}
+    - NVIDIA_VISIBLE_DEVICES=all
+    - NVIDIA_DRIVER_CAPABILITIES=all
+    - TZ=${TIMEZONE}
+  volumes:
+    - ${DEFAULT_CONTAINER_DATA_LOCATION}/Emby:/config # Configuration directory
+    - ./images/logowhite.png:/app/emby/system/dashboard-ui/modules/logoscreensaver/logowhite.png
+    - ./images/logowhite.png:/app/emby/system/dashboard-ui/modules/themes/logowhite.png
+    - ./images/logodark.png:/app/emby/system/dashboard-ui/modules/themes/logodark.png
+    - ${LOCAL_TV_PATH}:/media/Synology/Television # Media directory
+    - ${LOCAL_MOVIES_PATH}:/media/Synology/Movies # Media directory
+    - ${LOCAL_BACKUPS_PATH}:/media/Synology/Backups #Backups Directory
+    - /ssl/fullchain.pem:/ssl/fullchain.pem
+    - /ssl/privkey.pem:/ssl/privkey.pem
+    - /ssl/token:/ssl/token
+  ports:
+    - ${EMBY_HOST_PORT}:8096 #http port
+    - ${EMBY_HOST_PORT_SSL}:8920 #ssl port
+  runtime: nvidia
+  restart: unless-stopped
+  devices:
+    - /dev/nvidia-uvm:/dev/nvidia-uvm # Added nvidia devices here
+    - /dev/nvidia-uvm-tools:/dev/nvidia-uvm-tools # Added nvidia devices here
+    - /dev/nvidia-modeset:/dev/nvidia-modeset # Added nvidia devices here
+    - /dev/nvidiactl:/dev/nvidiactl # Added nvidia devices here
+    - /dev/nvidia0:/dev/nvidia0 # Added nvidia devices here
+    - /dev/nvidia1:/dev/nvidia1 # Added nvidia devices here (i have a 2nd GPU so i needed this too)
+    - /dev/dri:/dev/dri # I added this per suggestion, but this is for VAAPI so i don't know if this actually works -- this was what was failing before.
+  profiles:
+    - emby
 ```
 
 ### Screenshots
 
 `nvidia-smi` in the container:
 
-<img width="806" alt="Screenshot 2024-04-07 at 12 01 21 PM" src="https://github.com/linuxserver/docker-emby/assets/18407074/6df72d77-6e1f-493a-8087-3a45173bdeb1" />
+<img
+  width="806"
+  alt="Screenshot 2024-04-07 at 12 01 21 PM"
+  src="https://github.com/linuxserver/docker-emby/assets/18407074/6df72d77-6e1f-493a-8087-3a45173bdeb1"
+/>
 
 Inside of emby in the transcoding section:
 
-<img width="985" alt="Screenshot 2024-04-07 at 12 01 41 PM" src="https://github.com/linuxserver/docker-emby/assets/18407074/cf539cff-cc93-47ce-8f51-e7032887fc64" />
+<img
+  width="985"
+  alt="Screenshot 2024-04-07 at 12 01 41 PM"
+  src="https://github.com/linuxserver/docker-emby/assets/18407074/cf539cff-cc93-47ce-8f51-e7032887fc64"
+/>

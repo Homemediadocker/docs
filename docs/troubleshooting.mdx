@@ -156,7 +156,7 @@ After you run that command above, you may need to [Reinstall Docker](#reinstall-
 - This is needed sometimes if the docker network sock or the containers fail to start.
 - This will not modify the data at rest, but it will remove all data related to the docker installation and daemon.
 - This is destructive but only on the host system and only related to docker itself. Not related to your data for your containers.
-  - That is stored in `./.containers/**` for the most part if you use the default installation.
+  - That is stored in `${DEFAULT_CONTAINER_DATA_LOCATION}/**` for the most part if you use the default installation.
 
 :::
 
@@ -196,21 +196,22 @@ After executing the install above, be sure to look at the [Post Installation Ste
   docker rmi $(docker images -q)
   ```
 - Delete all Volumes
+
   ```sh
   docker volume rm $(docker volume ls -q)
   ```
 
   ## Emby Restore From Backup
 
-  Emby Server restores can be tricky - when you do have to do it, you need to edit the /config/data/library.db file - this file causes the image to not spin up properly as it becomes corrupt in the restoring process. Copy this file over manually after the restore completes. 
+  Emby Server restores can be tricky - when you do have to do it, you need to edit the /config/data/library.db file - this file causes the image to not spin up properly as it becomes corrupt in the restoring process. Copy this file over manually after the restore completes.
 
 Stop the emby container first!
 
-  ```sh
-  # stop emby contaienr
-  docker compose stop emby
+```sh
+# stop emby contaienr
+docker compose stop emby
 
-  # make a backup of your library.db and copy the new one in from your backups directory
-  sudo mv ~/path/to/.containers/Emby/data/library.db ~/path/to/.containers/Emby/data/library.db.bak && \
-  sudo cp /media/Synology/Backups/SomeEmbyBackup04-01-2024/library.db ~/path/to/.containers/Emby/data/
-  ```
+# make a backup of your library.db and copy the new one in from your backups directory
+sudo mv ~/path/to/.containers/Emby/data/library.db ~/path/to/.containers/Emby/data/library.db.bak && \
+sudo cp /media/Synology/Backups/SomeEmbyBackup04-01-2024/library.db ~/path/to/.containers/Emby/data/
+```

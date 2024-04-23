@@ -43,7 +43,7 @@ services:
       - PGID=${GID}
       - TZ=${TIMEZONE}
     volumes:
-      - ./.containers/Sonarr:/config
+      - ${DEFAULT_CONTAINER_DATA_LOCATION}/Sonarr:/config
       - ${LOCAL_TV_PATH}:/tv # optional but needed to map external data
       - ${LOCAL_DOWNLOADS_PATH}:/downloads # optional but needed to map external data
     ports:
@@ -89,7 +89,7 @@ services:
       - PGID=${GID}
       - TZ=${TIMEZONE}
     volumes:
-      - ./.containers/Radarr:/config
+      - ${DEFAULT_CONTAINER_DATA_LOCATION}/Radarr:/config
       - ${LOCAL_MOVIES_PATH}:/movies # optional but needed to map external data
       - ${LOCAL_DOWNLOADS_PATH}:/downloads # optional but needed to map external data
     ports:

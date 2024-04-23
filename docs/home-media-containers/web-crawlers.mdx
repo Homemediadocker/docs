@@ -41,7 +41,7 @@ services:
       - PGID=${GID}
       - TZ=${TIMEZONE}
     volumes:
-      - ./.containers/Prowlarr:/config
+      - ${DEFAULT_CONTAINER_DATA_LOCATION}/Prowlarr:/config
     ports:
       - ${PROWLARR_HOST_PORT}:9696
     restart: unless-stopped
@@ -90,7 +90,7 @@ services:
       - AUTO_UPDATE=${JACKETT_AUTO_UPDATE} #optional
       - RUN_OPTS=${JACKETT_RUN_OPTS} #optional
     volumes:
-      - ./.containers/Jackett:/config
+      - ${DEFAULT_CONTAINER_DATA_LOCATION}/Jackett:/config
       - ${LOCAL_DOWNLOADS_PATH}:/downloads
     ports:
       - ${JACKETT_HOST_PORT}:9117
