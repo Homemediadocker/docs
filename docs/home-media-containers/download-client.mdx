@@ -63,3 +63,13 @@ services:
     # - sonarr
     # - radarr
 ```
+
+:::warning Heads Up!
+
+There's a lot of commented lines in the above Transmission config. 
+
+- `ports:` are not allowed to be configured if the `network_mode:` is set to pass through the VPN service (`service:vpn`)
+  - Ports are instead configured on the `vpn` service itself
+- `depends_on:` This is uncommented in the main docker-compose file, but if you wanted to spin this up standalone, you wouldn't need that. Making the Transmission service depend on the `vpn` and the web crawlers/radarr/sonarr is important so that they come up first.
+
+:::

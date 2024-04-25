@@ -9,7 +9,7 @@ sidebar_position: 0
 This is not a requirement, but recommended to run with [transmission](./download-client.mdx)
 :::
 
-## NordVPN - NordLynx
+# NordVPN - NordLynx
 
 NordVPN is a common vpn client/server solution that utilizes OpenVPN and Wireguard. This implementation is setup to use NordLynx, which is specifically for the Wireguard implementation. Wireguard is 2x-3x faster than OpenVPN.
 
@@ -33,9 +33,41 @@ You must explicitly configure the `network_mode` to pass the containers through 
 | Shutdown | `docker compose down vpn`                                       |
 | Support  | [bubuntux/nordvpn](https://github.com/bubuntux/nordvpn)(Github) |
 
-### NordLynx and NordVPN Example Docker Compose
+## NordLynx and NordVPN Example Docker Compose
 
-#### NordLynx (older?)
+### NordVPN (Newer) with NordLynx capabilities inside it
+
+```yaml
+services:
+  vpn:
+    image: ghcr.io/bubuntux/nordvpn
+    cap_add:
+      - NET_ADMIN # Required
+      - NET_RAW # Required
+      - SYS_MODULE
+    environment: # Review https://github.com/bubuntux/nordvpn#environment-variables
+      - TOKEN=${TOKEN} # Required
+      - CONNECT=${NORD_CONNECT_AREA} # if none provided you will connect to the recommended server
+      - DNS=${VPN_DNS}
+      - TZ=${TIMEZONE}
+      - TECHNOLOGY=${NORD_TECHNOLOGY} # NordLynx or OpenVPN - NordLynx is Wireguard and supposedly 3x-5x faster
+      - ALLOWED_IPS=${VPN_ALLOWED_IPS}
+      - NETWORK=${VPN_NET_LOCAL} # So it can be accessed within the local network
+      - NET_LOCAL=${VPN_NET_LOCAL} # So it can be accessed within the local network
+    ports:
+      - ${TRANSMISSION_HOST_PORT}:9091 # webui for Transmission - it is exposed via the docker service network internally
+      - ${TRANSMISSION_SEED_DISCOVERY_PORT_TCP}:51413 # for seed discovery - greatly improves performance even if not seeding
+      - ${TRANSMISSION_SEED_DISCOVERY_PORT_UDP}:51413/udp
+      - ${DUPLICATI_HOST_PORT}:8200
+    volumes:
+      - /lib/modules:/lib/modules:ro # Required to install wireguard module
+    sysctls:
+      - net.ipv6.conf.all.disable_ipv6=1 # Recomended if using ipv4 only
+    restart: unless-stopped
+```
+
+
+### NordLynx (Legacy Config - use NordVPN if possible)
 
 ```yaml
 services:
@@ -68,33 +100,3 @@ services:
       - vpn_old
 ```
 
-#### NordVPN (Newer) with NordLynx capabilities inside it
-
-```yaml
-services:
-  vpn:
-    image: ghcr.io/bubuntux/nordvpn
-    cap_add:
-      - NET_ADMIN # Required
-      - NET_RAW # Required
-      - SYS_MODULE
-    environment: # Review https://github.com/bubuntux/nordvpn#environment-variables
-      - TOKEN=${TOKEN} # Required
-      - CONNECT=${NORD_CONNECT_AREA} # if none provided you will connect to the recommended server
-      - DNS=${VPN_DNS}
-      - TZ=${TIMEZONE}
-      - TECHNOLOGY=${NORD_TECHNOLOGY} # NordLynx or OpenVPN - NordLynx is Wireguard and supposedly 3x-5x faster
-      - ALLOWED_IPS=${VPN_ALLOWED_IPS}
-      - NETWORK=${VPN_NET_LOCAL} # So it can be accessed within the local network
-      - NET_LOCAL=${VPN_NET_LOCAL} # So it can be accessed within the local network
-    ports:
-      - ${TRANSMISSION_HOST_PORT}:9091 # webui for Transmission - it is exposed via the docker service network internally
-      - ${TRANSMISSION_SEED_DISCOVERY_PORT_TCP}:51413 # for seed discovery - greatly improves performance even if not seeding
-      - ${TRANSMISSION_SEED_DISCOVERY_PORT_UDP}:51413/udp
-      - ${DUPLICATI_HOST_PORT}:8200
-    volumes:
-      - /lib/modules:/lib/modules:ro # Required to install wireguard module
-    sysctls:
-      - net.ipv6.conf.all.disable_ipv6=1 # Recomended if using ipv4 only
-    restart: unless-stopped
-```

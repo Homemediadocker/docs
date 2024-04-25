@@ -135,6 +135,16 @@ services:
       - emby
 ```
 
+:::warning Heads Up!
+
+There's a lot of commented lines in the above Emby config. Most of that is fine to keep commented out. I left everything I have found in there for you to be able to pick and choose what you need based on what your host machine needs.
+
+- Nvidia stuff will only work if you have an nvidia video card
+- vchiq will only work if you have a raspberry pi
+- Apple silicon is not currently supported for hardware acceleration (as of April 2024) with Docker passthrough.
+
+:::
+
 ## Jellyfin
 
 - Just Jellyfin Commands
