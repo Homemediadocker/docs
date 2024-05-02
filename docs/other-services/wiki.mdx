@@ -1,0 +1,77 @@
+---
+id: wiki
+title: Wiki/Notes
+description: Wiki using Bookstack - a FOSS alternative to Confluence
+sidebar_position: 2
+---
+
+# Wiki
+
+A wiki or notes solution is always needed. This aims to provide a scalable solution that can be self hosted and entirely private to your home.
+
+## BookStack
+
+This is a free and open source solution comparable to Confluence.
+
+- Just Bookstack Commands
+
+| Type     | Command                          |
+| -------- | -------------------------------- |
+| Start    | `docker compose up bookstack -d` |
+| Shutdown | `docker compose down bookstack`  |
+
+<img src="/Home-Media-Docker/img/bookstack.png" alt="bookstack" />
+
+- Once started, Bookstack should be hit from this url:
+
+|         | URL                                                                                   |
+| ------- | ------------------------------------------------------------------------------------- |
+| Non-SSL | http://localhost:6875                                                                 |
+| Image   | [lscr.io/linuxserver/bookstack](https://docs.linuxserver.io/images/docker-bookstack/) |
+
+### Bookstack Example Docker Compose
+
+```yml
+services:
+  bookstack:
+    image: lscr.io/linuxserver/bookstack
+    container_name: ${BOOKSTACK_APP_CONTAINER_NAME}
+    environment:
+      - PUID=${UID}
+      - PGID=${GID}
+      - APP_URL=${BOOKSTACK_APP_URL}
+      - DB_HOST=${BOOKSTACK_DB_HOST}
+      - DB_PORT=${BOOKSTACK_DB_PORT}
+      - DB_USER=${BOOKSTACK_DB_USER}
+      - DB_PASS=${BOOKSTACK_DB_PASS}
+      - DB_DATABASE=${BOOKSTACK_DB_NAME}
+    volumes:
+      - ${DEFAULT_CONTAINER_DATA_LOCATION}/Bookstack/app:/config
+    ports:
+      - ${BOOKSTACK_WEB_HOST_HTTP_PORT}:80
+    restart: unless-stopped
+    depends_on:
+      - ${BOOKSTACK_DB_CONTAINER_NAME}
+    networks:
+      - default
+    profiles:
+      - all
+      - bookstack
+  bookstack_db:
+    image: lscr.io/linuxserver/mariadb
+    container_name: ${BOOKSTACK_DB_CONTAINER_NAME}
+    environment:
+      - PUID=${UID}
+      - PGID=${GID}
+      - MYSQL_ROOT_PASSWORD=${BOOKSTACK_DB_ROOT_PASS}
+      - TZ=${TIMEZONE}
+      - MYSQL_DATABASE=${BOOKSTACK_DB_NAME}
+      - MYSQL_USER=${BOOKSTACK_DB_USER}
+      - MYSQL_PASSWORD=${BOOKSTACK_DB_PASS}
+    volumes:
+      - ${DEFAULT_CONTAINER_DATA_LOCATION}/Bookstack/db:/config
+    restart: unless-stopped
+    profiles:
+      - all
+      - bookstack
+```
