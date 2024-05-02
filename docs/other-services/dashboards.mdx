@@ -1,0 +1,108 @@
+---
+id: dashboards
+title: Dashboards
+description: Dashboards for link organization and server management.
+sidebar_position: 0
+---
+
+# Dashboards
+
+There are many dashboard solutions out there and available for use. These two have been fairly easy to configure. If you ever want to see more, head on over to [/r/selfhosted](https://reddit.com/r/selfhosted) and someone always posts one of their dashboards.
+
+## Dashy
+
+:::info Information
+
+Dashy ships pre-configured with the rest of the containers. It is already configure to hit every container with a Web UI once spun up.
+
+- A starter Dashy configuration file is given in the base repo at [./dashy-config.yml](https://github.com/Homemediadocker/Home-Media-Docker/blob/main/dashy-config.yml)
+- This will create the starter environment for Dashy and you can add/remove and change it as you see fit for your own use case.
+- There is also an Editor in the UI that is very easy to work with that will save the yaml configuration.
+
+:::
+
+- Just Dashy Commands
+
+| Type     | Command                      |
+| -------- | ---------------------------- |
+| Start    | `docker compose up dashy -d` |
+| Shutdown | `docker compose down dashy`  |
+
+<img src="/Home-Media-Docker/img/dashy.png" alt="dashy" />
+
+- Once started, Dashy should be hit from this url:
+
+|         | URL                                                                    |
+| ------- | ---------------------------------------------------------------------- |
+| Non-SSL | http://localhost:4000                                                  |
+| Image   | [lissy93/dashy](https://dashy.to/docs/deployment#using-docker-compose) |
+
+### Dashy Example Docker Compose
+
+```yaml
+services:
+  dashy:
+    image: lissy93/dashy
+    container_name: dashy
+    volumes:
+      - ${DEFAULT_CONTAINER_DATA_LOCATION}/Dashy:/app/user-data
+      - ${DASHY_CONFIG_LOCATION}:/app/user-data/conf.yml # starter config for all the stuff in this docker compose
+    ports:
+      - ${DASHY_HOST_HTTP_PORT}:8080
+    environment:
+      - NODE_ENV=production # needed for optimized container image
+      - UID=${UID}
+      - GID=${GID}
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "node", "/app/services/healthcheck"]
+      interval: 1m30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+```
+
+## Heimdall! OPEN THE BIFROST
+
+:::warning Heads up!
+
+Heimdall Is behind a `heimdall` profile for docker `docker compose --profile heimdall up -d`. This is just a simple landing page configurator that allows users to build a landing page with their favorite links.
+
+- This dashboard is **NOT** preconfigured out of the box.
+
+:::
+
+- Just Heimdall Commands
+
+| Type     | Command                         |
+| -------- | ------------------------------- |
+| Start    | `docker compose up heimdall -d` |
+| Shutdown | `docker compose down heimdall`  |
+
+<img src="/Home-Media-Docker/img/heimdall.png" alt="heimdall" />
+
+- Once started, Heimdall should be hit from this url:
+
+|         | URL                                                                         |
+| ------- | --------------------------------------------------------------------------- |
+| Non-SSL | http://localhost:3080                                                       |
+| Image   | [linuxserver/heimdall](https://docs.linuxserver.io/images/docker-heimdall/) |
+
+### Heimdall Example Docker Compose
+
+```yaml
+services:
+  heimdall:
+    image: lscr.io/linuxserver/heimdall:latest
+    container_name: heimdall
+    environment:
+      - PUID=${UID}
+      - PGID=${GID}
+      - TZ=${TIMEZONE}
+    volumes:
+      - ${DEFAULT_CONTAINER_DATA_LOCATION}/Heimdall:/config
+    ports:
+      - ${HEIMDALL_HOST_HTTP_PORT}:80
+      - ${HEIMDALL_HOST_HTTPS_PORT}:443
+    restart: unless-stopped
+```
