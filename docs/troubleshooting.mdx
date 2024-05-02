@@ -91,7 +91,7 @@ I created a little bash script to run as a cron  after my system reboots in the 
 ```bash
 #!/bin/bash
 echo "Cleaning Up UFW Docker permissons"
-ufw-docker allow heimdall
+ufw-docker allow dashy
 ufw-docker allow emby
 ufw-docker allow jellyfin
 ufw-docker allow plex
@@ -102,6 +102,7 @@ ufw-docker allow prowlarr
 ufw-docker allow portainer
 ufw-docker allow jellyseerr
 ufw-docker allow pihole
+ufw-docker allow heimdall
 
 echo "Trying to clean up home automation if they exist"
 ufw-docker allow homeassistant
