@@ -1,0 +1,147 @@
+---
+id: docker-info
+title: Docker Info
+description: Learn about this docker setup and how it is modular for you.
+sidebar_position: 3
+---
+
+# Docker Info
+
+This project is built with reuse and modularity in mind. Every service is separate into its own separate `yml` file and included in the main `docker-compose.yml`.
+
+<details>
+    <summary><strong>docker-compose.yml</strong></summary>
+
+```yml
+# All colon based stuff is <external>:<internal> -- external being the host machine, internal being the container itself.
+# Ports in this instance cannot conflict and must be unique on the internal side.
+# i.e. everything cannot run on port 8080
+
+############ OTHER NOTES ############
+# The system data will be placed in this project directory by default if you change nothing
+# Data is placed in .containers and is .gitignored already
+# arm64v8 = Apple Silicon Based Macs
+
+name: home-media-docker
+include:
+  ####### NETWORK STUFF ########
+  - ./compose-files/vpn.yml
+  - ./compose-files/transmission.yml ## Depends on network-pihole -- vpn
+  - ./compose-files/duplicati.yml ## depends on network-pihol -- vpn
+  - ./compose-files/pihole.yml ## depends on network-pihol -- vpn
+
+  ####### NOTES ########
+  - ./compose-files/bookstack.yml
+
+  ####### CONTAINER MANAGEMENT ########
+  - ./compose-files/portainer.yml
+
+  ####### MEDIA CONSUMPTION ########
+  - ./compose-files/emby.yml ## --profile emby
+  - ./compose-files/plex.yml ## --profile plex
+  - ./compose-files/jellyfin.yml ## --profile jellyfin
+  - ./compose-files/komga.yml
+
+  ####### MEDIA MANAGEMENT ########
+  - ./compose-files/jellyseerr.yml
+  - ./compose-files/sonarr.yml
+  - ./compose-files/radarr.yml
+  - ./compose-files/prowlarr.yml
+  - ./compose-files/jackett.yml ## --profile jackett
+
+  ####### DASHBOARDS ########
+  - ./compose-files/dashy.yml
+  - ./compose-files/heimdall.yml ## --profile heimdall
+
+  ####### DOCKER VOLUMES AND NETWORK CONFIG ########
+  - ./compose-files/optional-mounted-volumes.yml
+  - ./compose-files/networks.yml
+
+  ######## HOME AUTOMATION CONTAINERS #############
+  - ./compose-files/homeassistant.yml
+  - ./compose-files/zwavejs.yml
+  - ./compose-files/zigbee2mqtt.yml
+```
+
+</details>
+
+## Including Services
+
+Docker ships with a very nice feature to be able to include other `yml` files and reuse code or import code into the final compose.
+
+When you include a `yml` file (shown above), it is appended to the file and resolves any conflicts when the compose script is evaluated.
+
+### File Structure
+
+Expand the structure below to see where the files are located. 
+
+<details>
+    <summary><strong>docker-compose.yml</strong></summary>
+
+```bash
+Home-Media-Docker/
+├── compose-files <--------- Add files in this directory
+│   ├── bookstack.yml
+│   ├── dashy.yml
+│   ├── duplicati.yml
+│   ├── emby.yml
+│   ├── heimdall.yml
+│   ├── homeassistant.yml
+│   ├── jackett.yml
+│   ├── jellyfin.yml
+│   ├── jellyseerr.yml
+│   ├── komga.yml
+│   ├── networks.yml
+│   ├── optional-mounted-volumes.yml
+│   ├── pihole.yml
+│   ├── plex.yml
+│   ├── portainer.yml
+│   ├── prowlarr.yml
+│   ├── radarr.yml
+│   ├── sonarr.yml
+│   ├── transmission.yml
+│   ├── vpn.yml
+│   ├── zigbee2mqtt.yml
+│   └── zwavejs.yml
+├── dashy-config.yml <------ Configuration for Dashy the dashboard
+├── docker-compose.yml <------ Main compose file. Add includes here
+└── scripts
+    ├── config-check.sh
+    ├── startup.sh
+    └── tearDown.sh
+```
+
+</details>
+
+### Why?
+
+This allows for services to be added and removed extremely easily. If you want to add a new `yml` of your own to this, it is literally just a matter of adding the item to the `include:` array.
+
+## Compose Profiles
+
+Every `yml` file is just a docker-compose service, network configuration, or volume configuration. The services have a `profiles` array that makes the `COMPOSE_PROFILES` environment variable work. Those profiles allow you to spin up only the services you specify.
+
+### Compose Profile Options
+
+| **Service**           | **Profiles**                             |
+| --------------------- | ---------------------------------------- |
+| Bookstack/BookstackDB | `bookstack`, `all`                       |
+| Dashy                 | `dashy`, `all`                           |
+| Duplicati             | `duplicati`, `all`                       |
+| Emby                  | `emby`                                   |
+| Heimdall              | `heimdall`, `all`                        |
+| Home Assistant        | `homeassistant`, `homeAutomation`, `all` |
+| Jackett               | `jackett`                                |
+| Jellyfin              | `jellyfin`                               |
+| Jellyseerr            | `jellyseerr`, `all`                      |
+| Komga                 | `komga`, `all`                           |
+| PiHole                | `pihole`, `all`                          |
+| Plex                  | `plex`                                   |
+| Portainer             | `portainer`, `all`                       |
+| Prowlarr              | `prowlarr`, `all`                        |
+| Radarr                | `radarr`, `all`                          |
+| Sonarr                | `sonarr`, `all`                          |
+| Transmission          | `transmission`, `all`                    |
+| VPN                   | `vpn`, `all`                             |
+| Zigbee2MQTT           | `zigbee2mqtt`, `homeAutomation`, `all`   |
+| ZwaveJS               | `zwavejs`, `homeAutomation`, `all`       |
