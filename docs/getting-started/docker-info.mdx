@@ -121,7 +121,30 @@ This allows for services to be added and removed extremely easily. If you want t
 
 Every `yml` file is just a docker-compose service, network configuration, or volume configuration. The services have a `profiles` array that makes the `COMPOSE_PROFILES` environment variable work. Those profiles allow you to spin up only the services you specify.
 
+### Variable Setup
+
+When setting up the `COMPOSE_PROFILES` env variable (required), you will have to make some decisions about how you want your containers to be added and what all you want to use in a container. Almost every service (except **media servers**) has the `all` profile so if you just want everything in the project, set the `COMPOSE_PROFILES` to `all` and move on. Otherwise, you can pick and choose what you want.
+
+### Example
+
+- All containers with the `all` profile. And a media server (jellyfin as an example)
+
+```bash
+COMPOSE_PROFILES=all,jellyfin
+```
+
+- Only a few Containers
+
+```bash
+COMPOSE_PROFILES=vpn,transmission,sonarr,radarr,jellyfin,dashy,homeAutomation
+## homeAutomation spins up 3 containers - see below
+```
+
+
 ### Compose Profile Options
+
+These are all possible profile options you can use for the associated services.
+
 
 | **Service**           | **Profiles**                             |
 | --------------------- | ---------------------------------------- |
