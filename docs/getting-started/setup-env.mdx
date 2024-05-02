@@ -92,6 +92,9 @@ HOME_ASSISTANT_CONTAINER_NAME="homeassistant"
 ZWAVE_JS_CONTAINER_NAME="zwavejs"
 ZWAVE_STICK_DEVICE_PATH=""
 
+## Dashy
+DASHY_CONFIG_LOCATION="./dashy-config.yml"
+
 #######################################################################################################################
 ##################################### DANGER BELOW - THESE ARE DEFAULT VALUES FOR PORTS ###############################
 #######################################################################################################################
@@ -119,6 +122,7 @@ PROWLARR_HOST_PORT="9696"
 JACKETT_HOST_PORT="9117"
 DUPLICATI_HOST_PORT="8200"
 EMBYSTAT_HOST_PORT="6555"
+DASHY_HOST_HTTP_PORT="4000"
 HEIMDALL_HOST_HTTP_PORT="3080"
 HEIMDALL_HOST_HTTPS_PORT="30803"
 PIHOLE_HOST_PORT="8880"
@@ -208,6 +212,10 @@ The username and password is here in the env file. Please do change this and doc
 TRANSMISSION_USER="transmission" #CHANGE_ME
 TRANSMISSION_PASS="noissimsnart" #CHANGE_ME
 ```
+
+## Dashy
+
+The `DASHY_CONFIG_LOCATION` is where the default configuration that ships with this project is based. This location can be changed if you would like to create a new config file, or would like to import someone else's.
 
 ## ZWave JS
 
