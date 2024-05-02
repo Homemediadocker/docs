@@ -44,8 +44,7 @@ const config = {
           sidebarPath: "./sidebars.js",
           // Please change this to your repo.
           // Remove this to remove the "edit this page" links.
-          editUrl:
-            "https://github.com/Homemediadocker/docs/edit/main/",
+          editUrl: "https://github.com/Homemediadocker/docs/edit/main/",
         },
         blog: {
           showReadingTime: true,
@@ -65,7 +64,7 @@ const config = {
     /** @type {import('@docusaurus/preset-classic').ThemeConfig} */
     ({
       // Replace with your project's social card
-      image: "img/docusaurus-social-card.jpg",
+      image: "img/home-media-docker-logo.png",
       navbar: {
         title: "Home Media Docker Docs",
         logo: {
