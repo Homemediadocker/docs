@@ -48,7 +48,7 @@ This solution ships with `Portainer` - if you want to convert this to use `minik
 services:
   ### Container management Web UI
   portainer:
-    container_name: portainer
+    container_name: ${PORTAINER_CONTAINER_NAME}
     image: portainer/portainer-ce:latest
     ports:
       - ${PORTAINER_HOST_PORT}:9000 # webui for portainer (http)
@@ -58,4 +58,7 @@ services:
       - /var/run/docker.sock:/var/run/docker.sock
       - ${DEFAULT_CONTAINER_DATA_LOCATION}/ssl:/ssl
     restart: unless-stopped
+    profiles:
+      - all
+      - portainer
 ```

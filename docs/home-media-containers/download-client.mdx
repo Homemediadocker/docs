@@ -35,9 +35,11 @@ sidebar_position: 6
 
 ```yaml
 services:
+  ############ NEEDS VPN BEFORE USE (OPENVPN or WIREGUARD) ############
+
   transmission:
     image: lscr.io/linuxserver/transmission:latest
-    container_name: transmission
+    container_name: ${TRANSMISSION_CONTAINER_NAME}
     network_mode: service:vpn
     environment:
       - PUID=${UID}
@@ -57,16 +59,19 @@ services:
     #   - 51413:51413 # for seed discovery - greatly improves performance even if not seeding
     #   - 51413:51413/udp
     restart: unless-stopped
-    # depends_on:
-    # - vpn
-    # - prowlarr
-    # - sonarr
-    # - radarr
+    depends_on:
+      - vpn
+      - prowlarr
+      - sonarr
+      - radarr
+    profiles:
+      - all
+      - transmission
 ```
 
 :::warning Heads Up!
 
-There's a lot of commented lines in the above Transmission config. 
+There's a lot of commented lines in the above Transmission config.
 
 - `ports:` are not allowed to be configured if the `network_mode:` is set to pass through the VPN service (`service:vpn`)
   - Ports are instead configured on the `vpn` service itself

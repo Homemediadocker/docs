@@ -162,7 +162,7 @@ If you want everything including the media server.
 
 ## OR
 
-docker compose --profile jellyfin up -d
+COMPOSE_PROFILES=all,jellyfin docker compose up -d
 ```
 
 Everything **except** a media server do this:

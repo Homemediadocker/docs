@@ -41,9 +41,10 @@ Dashy ships pre-configured with the rest of the containers. It is already config
 
 ```yaml
 services:
+  ############# DASHY IS THE GO TO DASHBOARD FOR THIS PROJECT ##################
   dashy:
     image: lissy93/dashy
-    container_name: dashy
+    container_name: ${DASHY_CONTAINER_NAME}
     volumes:
       - ${DEFAULT_CONTAINER_DATA_LOCATION}/Dashy:/app/user-data
       - ${DASHY_CONFIG_LOCATION}:/app/user-data/conf.yml # starter config for all the stuff in this docker compose
@@ -60,6 +61,9 @@ services:
       timeout: 10s
       retries: 3
       start_period: 40s
+    profiles:
+      - all
+      - dashy
 ```
 
 ## Heimdall! OPEN THE BIFROST
@@ -94,7 +98,7 @@ Heimdall Is behind a `heimdall` profile for docker `docker compose --profile hei
 services:
   heimdall:
     image: lscr.io/linuxserver/heimdall:latest
-    container_name: heimdall
+    container_name: ${HEIMDALL_CONTAINER_NAME}
     environment:
       - PUID=${UID}
       - PGID=${GID}
@@ -105,4 +109,7 @@ services:
       - ${HEIMDALL_HOST_HTTP_PORT}:80
       - ${HEIMDALL_HOST_HTTPS_PORT}:443
     restart: unless-stopped
+    profiles:
+      - heimdall
+      - all
 ```

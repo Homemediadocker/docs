@@ -40,9 +40,11 @@ sidebar_position: 7
 
 ```yaml
 services:
+  ############# Backups/Restore ############
+
   duplicati:
     image: lscr.io/linuxserver/duplicati:latest
-    container_name: duplicati
+    container_name: ${DUPLICATI_CONTAINER_NAME}
     network_mode: service:vpn
     environment:
       - PUID=${UID}
@@ -56,6 +58,9 @@ services:
     # ports:
     #   - ${DUPLICATI_HOST_PORT}:8200
     restart: unless-stopped
-    # depends_on:
-    #   - vpn
+    depends_on:
+      - vpn
+    profiles:
+      - all
+      - duplicati
 ```

@@ -39,7 +39,7 @@ sidebar_position: 5
 services:
   jellyseerr:
     image: fallenbagel/jellyseerr:latest
-    container_name: jellyseerr
+    container_name: ${JELLYSEERR_CONTAINER_NAME}
     environment:
       - LOG_LEVEL=${JELLYSEER_LOG_LEVEL}
       - TZ=${TIMEZONE}
@@ -49,4 +49,7 @@ services:
     volumes:
       - ${DEFAULT_CONTAINER_DATA_LOCATION}/Jellyseerr:/app/config
     restart: unless-stopped
+    profiles:
+      - all
+      - jellyseerr
 ```

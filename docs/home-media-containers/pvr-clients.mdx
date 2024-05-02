@@ -27,7 +27,7 @@ These clients are for gathering content and watching for new releases of content
 
 |                                                                | URL                                                                     |
 | -------------------------------------------------------------- | ----------------------------------------------------------------------- |
-| SSL (if you [enable it](https://nzbdrone.readthedocs.io/SSL/)) | https://localhost:9898                                                   |
+| SSL (if you [enable it](https://nzbdrone.readthedocs.io/SSL/)) | https://localhost:9898                                                  |
 | Non-SSL                                                        | http://localhost:8989                                                   |
 | Image                                                          | [linuxserver/sonarr](https://docs.linuxserver.io/images/docker-sonarr/) |
 
@@ -35,9 +35,10 @@ These clients are for gathering content and watching for new releases of content
 
 ```yaml
 services:
+  ############ Media PVR Management - TV SHOWS############
   sonarr:
     image: lscr.io/linuxserver/sonarr:latest
-    container_name: sonarr
+    container_name: ${SONARR_CONTAINER_NAME}
     environment:
       - PUID=${UID}
       - PGID=${GID}
@@ -54,6 +55,9 @@ services:
       - prowlarr
     networks:
       - default
+    profiles:
+      - all
+      - sonarr
 ```
 
 ## Radarr
@@ -81,9 +85,10 @@ services:
 
 ```yaml
 services:
+  ############ Media PVR Management - MOVIES ############
   radarr:
     image: lscr.io/linuxserver/radarr:latest
-    container_name: radarr
+    container_name: ${RADARR_CONTAINER_NAME}
     environment:
       - PUID=${UID}
       - PGID=${GID}
@@ -99,4 +104,7 @@ services:
       - prowlarr
     networks:
       - default
+    profiles:
+      - all
+      - radarr
 ```

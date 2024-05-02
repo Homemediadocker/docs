@@ -40,6 +40,7 @@ You must explicitly configure the `network_mode` to pass the containers through 
 ```yaml
 services:
   vpn:
+    container_name: ${VPN_CONTAINER_NAME}
     image: ghcr.io/bubuntux/nordvpn
     cap_add:
       - NET_ADMIN # Required
@@ -64,8 +65,10 @@ services:
     sysctls:
       - net.ipv6.conf.all.disable_ipv6=1 # Recomended if using ipv4 only
     restart: unless-stopped
+    profiles:
+      - all
+      - vpn
 ```
-
 
 ### NordLynx (Legacy Config - use NordVPN if possible)
 
@@ -73,6 +76,7 @@ services:
 services:
   ### NORD VPN WITH WIREGUARD (NordLynx)
   vpn_old:
+    container_name: ${VPN_CONTAINER_NAME}
     image: ghcr.io/bubuntux/nordlynx
     cap_add:
       - NET_ADMIN #required
@@ -99,4 +103,3 @@ services:
     profiles:
       - vpn_old
 ```
-
