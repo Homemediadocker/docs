@@ -26,9 +26,9 @@ name: home-media-docker
 include:
   ####### NETWORK STUFF ########
   - ./compose-files/vpn.yml
-  - ./compose-files/transmission.yml ## Depends on network-pihole -- vpn
-  - ./compose-files/duplicati.yml ## depends on network-pihol -- vpn
-  - ./compose-files/pihole.yml ## depends on network-pihol -- vpn
+  - ./compose-files/transmission.yml ##  --profile vpn
+  - ./compose-files/duplicati.yml ## --profile vpn
+  - ./compose-files/pihole.yml ## --profile vpn
 
   ####### NOTES ########
   - ./compose-files/bookstack.yml
@@ -73,7 +73,7 @@ When you include a `yml` file (shown above), it is appended to the file and reso
 
 ### File Structure
 
-Expand the structure below to see where the files are located. 
+Expand the structure below to see where the files are located.
 
 <details>
     <summary><strong>docker-compose.yml</strong></summary>
@@ -140,11 +140,9 @@ COMPOSE_PROFILES=vpn,transmission,sonarr,radarr,jellyfin,dashy,homeAutomation
 ## homeAutomation spins up 3 containers - see below
 ```
 
-
 ### Compose Profile Options
 
 These are all possible profile options you can use for the associated services.
-
 
 | **Service**           | **Profiles**                             |
 | --------------------- | ---------------------------------------- |
