@@ -39,6 +39,22 @@ sidebar_position: 5
   </tr>
 </table>
 
+### `config-check.sh`
+
+- This is just a useful script to check your compose config and uses your `COMPOSE_PROFILES` env variable to build the configuration.
+- Takes in an optional `$arg` to also include the media server with your config
+
+#### Example: with Jellyfin
+
+```sh
+./scripts/config-check.sh jellyfin
+```
+
+#### Example: With No Media Server
+
+```sh
+./scripts/config-check.sh
+```
 ### `startup.sh`
 
 - This is just a useful script to startup your server without needing to know the docker compose commands.
