@@ -16,7 +16,7 @@ const FeatureList = [
   },
   {
     title: "Easy to Setup",
-    Svg: require("@site/static/img/undraw_docusaurus_tree.svg").default,
+    Svg: require("@site/static/img/github-3d.svg").default,
     description: (
       <>
         Just take a few minutes and setup your .env file and the project is
@@ -26,12 +26,8 @@ const FeatureList = [
   },
   {
     title: "Easy to Modify",
-    Svg: require("@site/static/img/undraw_docusaurus_react.svg").default,
-    description: (
-      <>
-        Extend or customize your setup however you wish.
-      </>
-    ),
+    Svg: require("@site/static/img/docker-compose-logo-for-hom.svg").default,
+    description: <>Extend or customize your setup however you wish.</>,
   },
 ];
 
