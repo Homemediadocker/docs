@@ -29,6 +29,16 @@ Literally everything in the docker compose file is variablized as much as possib
 # This will place the container data in the current repo location.
 # You can change this and all data will be placed in that location.
 DEFAULT_CONTAINER_DATA_LOCATION="./.containers" # Change this if you want the data outside of this repo
+TRAEFIK_CONFIG_DIRECTORY="../traefik-data"
+PROJECT_HOSTNAME="localhost"
+
+####### TRAEFIK/ACME ############
+CF_API_EMAIL="" # Cloudflare email address used
+CF_DNS_API_TOKEN="" # Cloudflare api token (global)
+ACME_DNS_CHALLENGE_PROVIDER="cloudflare" # The provider name -- cloudflare and netlify are supported out of the box
+TRAEFIK_TLS_CERTRESOLVER="cloudflare" # The provider name -- cloudflare and netlify are supported out of the box
+TRAEFIK_DASHBOARD_CREDENTIALS=admin:$$2y$$05$$cqTXRio8juH740Wo7m4y5OWFbQKB0eTaHexKPYmssn4qctTe8ElQe # just admin/password but hashed.
+TRAEFIK_NETLIFY_TOKEN="asdfasdfasdfasdfasdfasdfasdfasdf" # API Token from netlify dashboard
 
 ## COMPOSE_PROFILES ---- Use this variable to select which containers you would like to spin up.
 ## Or you can just pass "all" into the variable and it will spin up everything (except the media server, that requires you to pass it in yourself)
@@ -63,6 +73,7 @@ PORTAINER_CONTAINER_NAME="portainer"
 PROWLARR_CONTAINER_NAME="prowlarr"
 RADARR_CONTAINER_NAME="radarr"
 SONARR_CONTAINER_NAME="sonarr"
+TRAEFIK_CONTAINER_NAME="traefik"
 TRANSMISSION_CONTAINER_NAME="transmission"
 VPN_CONTAINER_NAME="vpn"
 ZIGBEE2MQTT_CONTAINER_NAME="zigbee2mqtt"
@@ -73,6 +84,10 @@ TOKEN=11111111111223123123123123asdba123 # This is specific to nord VPN - found 
 PRIVATE_KEY=sdlfkabakjhslkdgjadlfkjasdfhaskdjhagsdg ##CHANGE ME - follow instructions to obtain the private key
 NORD_TECHNOLOGY=NordLynx # NordLynx or OpenVPN
 NORD_CONNECT_AREA=United_States # You can separate this by country and city too, but if you leave it blank it will just default to the recommended fastest server
+
+VPN_DNS="8.8.8.8,8.8.4.4" #CHANGE_ME - this is google's DNS if that works for you
+VPN_ALLOWED_IPS="0.0.0.0/0" #CHANGE_ME - this allows all IPs
+VPN_NET_LOCAL="172.16.0.0/12,192.168.0.0/16" #CHANGE_ME if your network doesn't fit this schema
 
 ## User Host Machine - unix machines can find this by doing `id <username>`
 UID="111" ##CHANGE ME this is usually the user id on the host machine that will be running the docker compose command. But you can make this be a less privileged user and that is fine too
@@ -131,8 +146,28 @@ ZWAVE_STICK_DEVICE_PATH="/path/to/usb" #CHANGE_ME
 ZIGBEE_STICK_DEVICE_PATH="/path/to/usb" #CHANGE_ME
 #ZIGBEE_STICK_DEVICE_PATH="/dev/serial/by-id/usb-Texas_Instruments_TI_CC2531_USB_CDC___0X00124B0018ED3DDF-if00"
 
+## PIHOLE
+PIHOLE_SECURE_WEB_PASSWORD="pihole"
+PIHOLE_STATIC_IP_ADDRESS="192.168.1.200"
+PIHOLE_NETWORK_GATEWAY="192.168.1.1"
+PIHOLE_NETWORK_ADDRESS_POOL="192.168.1.0/24"
+PIHOLE_NETWORK_INTERFACE="eth0"
+
 ## Dashy
+# Your Backup ID: xxxx-xxxx-xxxx-xxxx
 DASHY_CONFIG_LOCATION="./dashy-config.yml"
+
+## Bookstack - OSS Confluence Alternative
+BOOKSTACK_PORT="6875"
+BOOKSTACK_APP_URL="https://${PROJECT_HOSTNAME}" #CHANGE_ME - if you are hosting outside your local machine
+
+
+BOOKSTACK_DB_HOST="${BOOKSTACK_DB_CONTAINER_NAME}"
+BOOKSTACK_DB_PORT=3306
+BOOKSTACK_DB_NAME="bookstackapp" #CHANGE_ME - optionally change. this can stay
+BOOKSTACK_DB_USER="bookstack" #CHANGE_ME
+BOOKSTACK_DB_PASS="kcatskoob" #CHANGE_ME
+BOOKSTACK_DB_ROOT_PASS="kcatskoob" #CHANGE_ME
 
 #######################################################################################################################
 ##################################### DANGER BELOW - THESE ARE DEFAULT VALUES FOR PORTS ###############################
@@ -142,39 +177,113 @@ DASHY_CONFIG_LOCATION="./dashy-config.yml"
 ## These are defaults and can be changed,
 ## but use caution and take backups because changing these
 ## may lead to loss of access to a service
+BOOKSTACK_WEB_HOST_HTTP_PORT="${BOOKSTACK_PORT}"
+DASHY_HOST_HTTP_PORT="4000"
+DUPLICATI_HOST_PORT="8200"
+EMBY_HOST_PORT="8096"
+EMBY_HOST_PORT_SSL="8920"
+EMBYSTAT_HOST_PORT="6555"
+HEIMDALL_HOST_HTTP_PORT="3080"
+HEIMDALL_HOST_HTTPS_PORT="30803"
+JACKETT_HOST_PORT="9117"
+JELLYFIN_HOST_PORT="8096"
+JELLYFIN_HOST_PORT_SSL="8920"
+JELLYSEERR_HOST_PORT="5055"
+KOMGA_HOST_PORT="8341"
+PIHOLE_HOST_PORT="8880"
+PLEX_HOST_PORT="32400"
 PORTAINER_HOST_PORT="9000"
 PORTAINER_HOST_PORT_SSL="49443"
+PROWLARR_HOST_PORT="9696"
+RADARR_HOST_PORT="7878"
+SONARR_HOST_PORT="8989"
+SONARR_HOST_PORT_SSL="9898"
+TRAEFIK_DASHBOARD_PORT="8080"
 TRANSMISSION_HOST_PORT="9091"
 TRANSMISSION_SEED_DISCOVERY_PORT_TCP="51413"
 TRANSMISSION_SEED_DISCOVERY_PORT_UDP="51413"
-EMBY_HOST_PORT="8096"
-EMBY_HOST_PORT_SSL="8920"
-JELLYFIN_HOST_PORT="8096"
-JELLYFIN_HOST_PORT_SSL="8920"
-PLEX_HOST_PORT="32400"
-KOMGA_HOST_PORT="8341"
-JELLYSEERR_HOST_PORT="5055"
-SONARR_HOST_PORT="8989"
-SONARR_HOST_PORT_SSL="9898"
-RADARR_HOST_PORT="7878"
-PROWLARR_HOST_PORT="9696"
-JACKETT_HOST_PORT="9117"
-DUPLICATI_HOST_PORT="8200"
-EMBYSTAT_HOST_PORT="6555"
-DASHY_HOST_HTTP_PORT="4000"
-HEIMDALL_HOST_HTTP_PORT="3080"
-HEIMDALL_HOST_HTTPS_PORT="30803"
-PIHOLE_HOST_PORT="8880"
+
 
 #### HOME AUTOMATION EXPOSED PORTS ####
 HOME_ASSISTANT_HOST_PORT="8123"
+ZIGBEE2MQTT_HOST_PORT="38080"
 ZWAVE_JS_UI_HOST_PORT="8091"
 ZWAVE_JS_WS_HOST_PORT="3000"
-ZIGBEE2MQTT_HOST_PORT="38080"
+
+## Gitlab specific
+RUNNER_NAME=RUNNER-NAME
+REGISTRATION_TOKEN=TOKEN
+CI_SERVER_URL=https://gitlab.com/
+
+##### AUTHENTIK ######
+#### I KNOW SOME OF THESE ARE DUPED. I'll clean these up in a later commit
+# .env (in ALL)
+DOCKERDIR=${DEFAULT_CONTAINER_DATA_LOCATION}  # CHANGEME
+PUID=${UID}               # CHANGEME
+PGID=${GID}               # CHANGEME
+TZ=${TIMEZONE}
+DOMAIN=${PROJECT_HOSTNAME}    # CHANGEME
+
+
+################################################################
+# PostgreSQL
+################################################################
+POSTGRES_DB=pgauthentik
+POSTGRES_USER=authentik
+POSTGRES_PASSWORD=testing123
+PG_PASS=testing123
+
+
+################################################################
+# Authentik
+################################################################
+AUTHENTIK_REDIS__HOST=authentik_redis
+AUTHENTIK_LISTEN__HTTP=authentik-server:8000
+AUTHENTIK_LISTEN__HTTPS=authentik-server:8443
+
+AUTHENTIK_POSTGRESQL__HOST=authentik_postgresql
+AUTHENTIK_POSTGRESQL__NAME=$POSTGRES_DB
+AUTHENTIK_POSTGRESQL__USER=$POSTGRES_USER
+AUTHENTIK_POSTGRESQL__PASSWORD=$POSTGRES_PASSWORD
+
+AUTHENTIK_ERROR_REPORTING__ENABLED: "false"
+AUTHENTIK_SECRET_KEY=123123123123123123123123123123
+# WORKERS=2
+
+# SMTP Host Emails are sent to
+AUTHENTIK_EMAIL__HOST=smtp.gmail.com
+AUTHENTIK_EMAIL__PORT=587
+# Optionally authenticate (don't add quotation marks to your password)
+AUTHENTIK_EMAIL__USERNAME=CHANGEME@gmail.com
+AUTHENTIK_EMAIL__PASSWORD=/run/secrets/authelia_notifier_smtp_password
+# Use StartTLS
+AUTHENTIK_EMAIL__USE_TLS=false
+# Use SSL
+AUTHENTIK_EMAIL__USE_SSL=false
+AUTHENTIK_EMAIL__TIMEOUT=10
+# Email address authentik will send from, should have a correct @domain
+AUTHENTIK_EMAIL__FROM=CHANGEME@gmail.com
+
+#########################################################################################
+########## ENABLE MIDDLEWARES IF YOU WANT TO USE PROXY AUTHENTICATION ###################
+#########################################################################################
+# PROWLARR_AUTHENTIK_MIDDLEWARE="traefik.http.routers.${PROWLARR_CONTAINER_NAME}.middlewares=middlewares-authentik@file"
+# RADARR_AUTHENTIK_MIDDLEWARE="traefik.http.routers.${RADARR_CONTAINER_NAME}.middlewares=middlewares-authentik@file"
+# SONARR_AUTHENTIK_MIDDLEWARE="traefik.http.routers.${SONARR_CONTAINER_NAME}.middlewares=middlewares-authentik@file"
+# TRAEFIK_DASHBOARD_AUTHENTIK_MIDDLEWARE="traefik.http.routers.${TRAEFIK_CONTAINER_NAME}.middlewares=middlewares-authentik@file"
+
+
+################################################################
+# GeoIP
+################################################################
+GEOIPUPDATE_ACCOUNT_ID=CHANGEME
+GEOIPUPDATE_LICENSE_KEY=CHANGEME
+AUTHENTIK_AUTHENTIK__GEOIP=/geoip/GeoLite2-City.mmdb
+GEOIPUPDATE_EDITION_IDS=GeoLite2-City
+GEOIPUPDATE_FREQUENCY=8
 ```
 
 </details>
-
 
 ## Default Container Location
 
@@ -182,7 +291,7 @@ The default location where all container data is persisted is in `./.containers/
 
 ## Compose Profiles
 
-This is an interesting feature in docker that allows this project to essentially work with feature flags. 
+This is an interesting feature in docker that allows this project to essentially work with feature flags.
 
 ```bash
 COMPOSE_PROFILES=...

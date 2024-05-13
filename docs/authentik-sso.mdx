@@ -1,0 +1,177 @@
+---
+id: authentik-sso
+title: SSO with Authentik
+description: Authentik is a robust solution for an SSO that is highly configurable and easy to use once stood up. It supports MFA and can be used as a dashboard or landing page solution as well.
+sidebar_position: 75
+---
+
+# Authentik
+
+Authentik is one of the better SSO products I tried. I have tried authelia and keycloak as well. Keycloak is a close second for me but I found Authentik to be much better maintained once I got it setup.
+
+> Authentik is an open-source Identity Provider, focused on flexibility and versatility. With authentik, site administrators, application developers, and security engineers have a dependable and secure solution for authentication in almost any type of environment. There are robust recovery actions available for the users and applications, including user profile and password management. You can quickly edit, deactivate, or even impersonate a user profile, and set a new password for new users or reset an existing password.
+
+## Auth Support
+
+They support all of the major providers, such as OAuth2, SAML, LDAP, and SCIM, so you can pick the protocol that you need for each application.
+
+## Do I have to use it?
+
+Authentik is completely optional to enable, but when you do, note that only a few containers are setup for it out of the box. Some need to be manually configured, enabled through in-app plugins (like emby's LDAP plugin), or through a forward proxy and basic auth pass.
+
+### Traefik Dependency
+
+This is not directly dependent on `Traefik` to run; if you don't need traefik, then remove the `- traefik` from the `depends_on` section in the `authentik-server` service.
+
+
+:::warning Head up!
+
+If you are running a project as large (or larger) than this one with multiple containers, note that you may get a container port conflict, much like Authentik and Portainer in this project.
+
+- They both expose similar ports - `9000` and `9443`
+- This project `.env` file already forcibly changes these ports for Authentik for you so you don't have to worry about port conflicts. I found them already for you!
+
+:::
+
+- Just Authentik Commands
+
+| Type     | Command                          |
+| -------- | -------------------------------- |
+| Start    | `docker compose up authentik -d` |
+| Shutdown | `docker compose down authentik`  |
+
+- Once started, Authentik should be hit from this url:
+
+|                   | URL                          |
+| ----------------- | ---------------------------- |
+| Non-SSL           | http://localhost:8000/       |
+| via Reverse Proxy | https://authentik.localhost/ |
+
+<img
+  src="/Home-Media-Docker/img/authentik-login-page.png"
+  alt="authentik-login-page"
+/>
+<img
+  src="/Home-Media-Docker/img/authentik-application-page.png"
+  alt="authentik-application-page"
+/>
+
+### Traefik Example Docker Compose
+
+```yml
+services:
+  postgresql:
+    image: docker.io/library/postgres:12-alpine
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -d $${POSTGRES_DB} -U $${POSTGRES_USER}"]
+      start_period: 20s
+      interval: 30s
+      retries: 5
+      timeout: 5s
+    volumes:
+      - ${DEFAULT_CONTAINER_DATA_LOCATION}/Authentik/db:/var/lib/postgresql/data
+    networks:
+      - zauthentik
+    environment:
+      POSTGRES_PASSWORD: ${PG_PASS:?database password required}
+      POSTGRES_USER: ${PG_USER:-authentik}
+      POSTGRES_DB: ${PG_DB:-authentik}
+    env_file:
+      - ../.env
+    profiles:
+      - all
+      - authentik
+
+  redis:
+    image: docker.io/library/redis:alpine
+    command: --save 60 1 --loglevel warning
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "redis-cli ping | grep PONG"]
+      start_period: 20s
+      interval: 30s
+      retries: 5
+      timeout: 3s
+    volumes:
+      - ${DEFAULT_CONTAINER_DATA_LOCATION}/Authentik/redis:/data
+    networks:
+      - zauthentik
+    profiles:
+      - all
+      - authentik
+
+  authentik-server:
+    image: ${AUTHENTIK_IMAGE:-ghcr.io/goauthentik/server}:${AUTHENTIK_TAG:-latest}
+    container_name: authentik-server
+    restart: unless-stopped
+    command: server
+    environment:
+      AUTHENTIK_REDIS__HOST: redis
+      AUTHENTIK_POSTGRESQL__HOST: postgresql
+      AUTHENTIK_POSTGRESQL__USER: ${PG_USER:-authentik}
+      AUTHENTIK_POSTGRESQL__NAME: ${PG_DB:-authentik}
+      AUTHENTIK_POSTGRESQL__PASSWORD: ${PG_PASS}
+      # AUTHENTIK_HOST: http://authentik.${PROJECT_HOSTNAME}
+      AUTHENTIK_HOST_BROWSER: https://authentik.${PROJECT_HOSTNAME}
+
+    volumes:
+      - ${DEFAULT_CONTAINER_DATA_LOCATION}/Authentik/media:/media
+      - ${DEFAULT_CONTAINER_DATA_LOCATION}/Authentik/custom-templates:/templates
+    networks:
+      - zauthentik
+      - homelab
+    env_file:
+      - ../.env
+    # ports:
+    #   - 8000:8000
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=home-media-docker_homelab"
+      - "traefik.http.routers.authentik-server.rule=Host(`authentik.${PROJECT_HOSTNAME}`)"
+      - "traefik.http.routers.authentik-server.entrypoints=https"
+      - "traefik.http.routers.authentik-server.tls=true"
+      - "traefik.http.routers.authentik-server.tls.certresolver=${TRAEFIK_TLS_CERTRESOLVER}"
+      - "traefik.http.routers.authentik-server.service=authentik-svc"
+      - "traefik.http.services.authentik-svc.loadBalancer.server.port=8000"
+    depends_on:
+      - postgresql
+      - redis
+      - traefik
+    profiles:
+      - all
+      - authentik
+
+  worker:
+    image: ${AUTHENTIK_IMAGE:-ghcr.io/goauthentik/server}:${AUTHENTIK_TAG:-latest}
+    restart: unless-stopped
+    command: worker
+    environment:
+      AUTHENTIK_REDIS__HOST: redis
+      AUTHENTIK_POSTGRESQL__HOST: postgresql
+      AUTHENTIK_POSTGRESQL__USER: ${PG_USER:-authentik}
+      AUTHENTIK_POSTGRESQL__NAME: ${PG_DB:-authentik}
+      AUTHENTIK_POSTGRESQL__PASSWORD: ${PG_PASS}
+    # `user: root` and the docker socket volume are optional.
+    # See more for the docker socket integration here:
+    # https://goauthentik.io/docs/outposts/integrations/docker
+    # Removing `user: root` also prevents the worker from fixing the permissions
+    # on the mounted folders, so when removing this make sure the folders have the correct UID/GID
+    # (1000:1000 by default)
+    user: root
+    networks:
+      - zauthentik
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ${DEFAULT_CONTAINER_DATA_LOCATION}/Authentik/media:/media
+      - ${DEFAULT_CONTAINER_DATA_LOCATION}/Authentik/certs:/certs
+      - ${DEFAULT_CONTAINER_DATA_LOCATION}/Authentik/custom-templates:/templates
+    env_file:
+      - ../.env
+    depends_on:
+      - postgresql
+      - redis
+    profiles:
+      - all
+      - authentik
+```

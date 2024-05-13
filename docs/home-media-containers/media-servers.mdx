@@ -95,6 +95,9 @@ These arguments are for the [startup.sh](../getting-started/helper-scripts.mdx) 
 
 ```yaml
 services:
+  ############ Media Consumption ############
+
+  ## NOTE - DON'T RUN EMBY AND JELLYFIN AT THE SAME TIME! THEY WILL HAVE PORT CONFLICTS!
   emby:
     image: lscr.io/linuxserver/emby:latest
     container_name: ${EMBY_CONTAINER_NAME}
@@ -131,6 +134,14 @@ services:
     # - /dev/video11:/dev/video11 #optional
     # - /dev/video12:/dev/video12 #optional
     restart: unless-stopped
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.${EMBY_CONTAINER_NAME}.rule=Host(`${EMBY_CONTAINER_NAME}.${PROJECT_HOSTNAME}`)"
+      - "traefik.http.routers.${EMBY_CONTAINER_NAME}.entrypoints=https"
+      - "traefik.http.routers.${EMBY_CONTAINER_NAME}.tls=true"
+      - "traefik.http.services.${EMBY_CONTAINER_NAME}.loadbalancer.server.port=${EMBY_HOST_PORT}"
+    networks:
+      - homelab
     profiles:
       - emby
 ```
@@ -170,6 +181,7 @@ There's a lot of commented lines in the above Emby config. Most of that is fine 
 
 ```yaml
 services:
+  ## NOTE - DON'T RUN EMBY AND JELLYFIN AT THE SAME TIME! THEY WILL HAVE PORT CONFLICTS!
   jellyfin:
     image: lscr.io/linuxserver/jellyfin:latest
     container_name: ${JELLYFIN_CONTAINER_NAME}
@@ -177,18 +189,27 @@ services:
       - PUID=${UID}
       - PGID=${GID}
       - TZ=${TIMEZONE}
-      # - JELLYFIN_PublishedServerUrl=192.168.0.5 #optional
+      # - JELLYFIN_PublishedServerUrl="${JELLYFIN_CONTAINER_NAME}.${PROJECT_HOSTNAME}" #optional
     volumes:
       - ${DEFAULT_CONTAINER_DATA_LOCATION}/Jellyfin:/config
       - ${LOCAL_TV_PATH}:/media/Synology/Television # Media directory
       - ${LOCAL_MOVIES_PATH}:/media/Synology/Movies # Media directory
       - ${DEFAULT_CONTAINER_DATA_LOCATION}/ssl:/ssl # Add SSL Certs to this directory
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.${JELLYFIN_CONTAINER_NAME}.rule=Host(`${JELLYFIN_CONTAINER_NAME}.${PROJECT_HOSTNAME}`)"
+      - "traefik.http.routers.${JELLYFIN_CONTAINER_NAME}.entrypoints=https"
+      - "traefik.http.routers.${JELLYFIN_CONTAINER_NAME}.tls=true"
+      - "traefik.http.services.${JELLYFIN_CONTAINER_NAME}.loadbalancer.server.port=${JELLYFIN_HOST_PORT}"
+      ##### JELLYFIN SUPPORTS OIDC AND LDAP PLUGINS FOR AUTHENTIK - https://docs.goauthentik.io/integrations/services/jellyfin/
     ports:
       - ${JELLYFIN_HOST_PORT}:8096
       - ${JELLYFIN_HOST_PORT_SSL}:8920 #optional
       - 7359:7359/udp #optional
       - 1900:1900/udp #optional
     restart: unless-stopped
+    networks:
+      - homelab
     profiles:
       - jellyfin
 ```
@@ -224,6 +245,7 @@ services:
       - PGID=${GID}
       - TZ=${TIMEZONE}
       - VERSION=${PLEX_VERSION}
+      - "ADVERTISE_IP=https://${PLEX_CONTAINER_NAME}.${PROJECT_HOSTNAME}:443"
       - PLEX_CLAIM=${PLEX_CLAIM} #optional
     ports:
       - ${PLEX_HOST_PORT}:32400
@@ -231,7 +253,16 @@ services:
       - ${DEFAULT_CONTAINER_DATA_LOCATION}/Plex:/config
       - ${LOCAL_TV_PATH}:/tv
       - ${LOCAL_MOVIES_PATH}:/movies
+    labels:
+      ########## TODO - SETUP AUTH MIDDLEWARE
+      - "traefik.enable=true"
+      - "traefik.http.routers.${PLEX_CONTAINER_NAME}.rule=Host(`${PLEX_CONTAINER_NAME}.${PROJECT_HOSTNAME}`)"
+      - "traefik.http.routers.${PLEX_CONTAINER_NAME}.entrypoints=https"
+      - "traefik.http.routers.${PLEX_CONTAINER_NAME}.tls=true"
+      - "traefik.http.services.${PLEX_CONTAINER_NAME}.loadbalancer.server.port=${PLEX_HOST_PORT}"
     restart: unless-stopped
+    networks:
+      - homelab
     profiles:
       - plex
 ```
@@ -270,6 +301,13 @@ services:
     volumes:
       - ${DEFAULT_CONTAINER_DATA_LOCATION}/Komga/config:/config
       - ${LOCAL_BOOKS_PATH}:/data
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.${KOMGA_CONTAINER_NAME}.entrypoints=https"
+      - "traefik.http.routers.${KOMGA_CONTAINER_NAME}.tls=true"
+      - "traefik.http.routers.${KOMGA_CONTAINER_NAME}.service=${KOMGA_CONTAINER_NAME}"
+      - "traefik.http.routers.${KOMGA_CONTAINER_NAME}.rule=Host(`${KOMGA_CONTAINER_NAME}.${PROJECT_HOSTNAME}`)"
+      - "traefik.http.services.${KOMGA_CONTAINER_NAME}.loadbalancer.server.url=http://komga:${KOMGA_HOST_PORT}" #komga in the url here is the service name which cannot be dynamic --- komga requires a url with a port in it for access
     ports:
       - ${KOMGA_HOST_PORT}:25600
     user: "${UID}:${GID}"
@@ -283,7 +321,7 @@ services:
       - JAVA_OPTS=${KOMGA_JAVA_OPTS}
     restart: unless-stopped
     networks:
-      - default
+      - homelab
     profiles:
       - all
       - komga

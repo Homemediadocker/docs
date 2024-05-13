@@ -1,0 +1,125 @@
+---
+id: traefik-reverse-proxy
+title: Traefik (Reverse Proxy)
+description: Traefik is a robust reverse proxy solution that is hostable as a standalone, docker, or in a K8 cluster.
+sidebar_position: 70
+---
+
+# Traefik
+
+This is definitely one of the better reverse proxy solutions I have ever used. Traefik is just magical and they explain their product better than I ever could:
+
+> Traefik is an open-source Edge Router that makes publishing your services a fun and easy experience. It receives requests on behalf of your system and finds out which components are responsible for handling them.
+>
+> What sets Traefik apart, besides its many features, is that it automatically discovers the right configuration for your services. The magic happens when Traefik inspects your infrastructure, where it finds relevant information and discovers which service serves which request. [source](https://doc.traefik.io/traefik/#:~:text=Traefik%20is%20an,serves%20which%20request.)
+
+Basically when you spin up your containers, as long as you have the right labels on them, Traefik knows about them, and serves them up accordingly. It's very cool and one of the best parts about this entire setup is almost every compose file is already presetup and tested in a local and server environment with Traefik in mind as a first class citizen.
+
+## Do I have to use it?
+
+Traefik is completely optional to enable, but when you do, every container is setup to be hit with a direct hostname (no port required) like `https://*.localhost` or `https://<container_name>.localhost` or further `https://sonarr.localhost`.
+
+## Certificates
+
+Traefik comes with a nice little feature and integration with `acme` and Let's Encrypt inside of it to sign certificates and give you a solid SSL experience. Since it is a reverse proxy and Load balancer, you can sign a single wild card cert and all of your containers will use it without having to configure each container to work with static SSL certs.
+
+### Setup
+
+First and foremost -- [READ THE DOCS](https://doc.traefik.io/traefik/) - they are going to be your guiding light if you veer away from this project or do your own compose files.
+
+Every container is already setup for basic use of traefik and SSL out of the box, all you have to do is enable traefik.
+
+**Enable Traefik Project Wide for Scripts**
+
+```shell
+# In your .env file
+## Or just individually comma separate your services.
+COMPOSE_PROFILES=bookstack,dashy,........ # (truncated for readability)
+
+### ENABLE TRAEFIK - keep COMPOSE_PROFILES above
+COMPOSE_PROFILES=${COMPOSE_PROFILES},traefik"
+```
+
+**Run the startup script**
+
+```shell
+./scripts/startup.sh jellyfin # jellyfin is just a media server example
+
+# you will see an echo of your enabled profiles
+COMPOSE_PROFILES=bookstack,dashy,duplicati,...,traefik
+
+## containers will start or pull
+```
+
+- Just Traefik Commands
+
+| Type     | Command                        |
+| -------- | ------------------------------ |
+| Start    | `docker compose up traefik -d` |
+| Shutdown | `docker compose down traefik`  |
+
+- Once started, Traefik should be hit from this url:
+
+|                   | URL                                              |
+| ----------------- | ------------------------------------------------ |
+| Non-SSL           | http://localhost:8080/dashboard                  |
+| via Reverse Proxy | https://traefik.localhost/dashboard              |
+| Image             | [traefik:v3.0](https://hub.docker.com/_/traefik) |
+
+### Traefik Dashboard
+
+<img src="/Home-Media-Docker/img/traefik-dashboard.png" alt="traefik-dashboard" />
+
+### Traefik Example Docker Compose
+
+```yml
+services:
+  traefik:
+    image: traefik:v3.0
+    container_name: ${TRAEFIK_CONTAINER_NAME}
+    restart: unless-stopped
+    security_opt:
+      - no-new-privileges:true
+    networks:
+      - homelab
+    ports:
+      - 80:80
+      - 443:443/tcp
+      - 443:443/udp # Uncomment if you want HTTP3
+      - ${TRAEFIK_DASHBOARD_PORT}:8080
+    environment:
+      # CF_DNS_API_TOKEN_FILE: /run/secrets/cf_api_token # note using _FILE for docker secrets
+      CF_DNS_API_TOKEN: ${CF_DNS_API_TOKEN} # if using .env
+      TRAEFIK_DASHBOARD_CREDENTIALS: ${TRAEFIK_DASHBOARD_CREDENTIALS}
+      NETLIFY_TOKEN: ${TRAEFIK_NETLIFY_TOKEN}
+    # secrets:
+    #   - cf_api_token
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - ../traefik-data/traefik.yml:/traefik.yml:ro
+      - ../traefik-data/acme.json:/acme.json
+      - ../traefik-data/config.yml:/config.yml:ro
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=home-media-docker_homelab"
+      - "traefik.http.routers.${TRAEFIK_CONTAINER_NAME}.entrypoints=http"
+      - "traefik.http.routers.${TRAEFIK_CONTAINER_NAME}.rule=Host(`${TRAEFIK_CONTAINER_NAME}.${PROJECT_HOSTNAME}`)"
+      # - "traefik.http.middlewares.traefik-auth.basicauth.users=${TRAEFIK_DASHBOARD_CREDENTIALS}"
+      - "traefik.http.middlewares.traefik-https-redirect.redirectscheme.scheme=https"
+      - "traefik.http.middlewares.sslheader.headers.customrequestheaders.X-Forwarded-Proto=https"
+      - "traefik.http.routers.${TRAEFIK_CONTAINER_NAME}.middlewares=traefik-https-redirect"
+      - "traefik.http.routers.${TRAEFIK_CONTAINER_NAME}-secure.entrypoints=https"
+      - "traefik.http.routers.${TRAEFIK_CONTAINER_NAME}-secure.rule=Host(`${TRAEFIK_CONTAINER_NAME}.${PROJECT_HOSTNAME}`)"
+      # - "traefik.http.routers.${TRAEFIK_CONTAINER_NAME}-secure.middlewares=traefik-auth"
+      - "traefik.http.routers.${TRAEFIK_CONTAINER_NAME}-secure.tls=true"
+      - "traefik.http.routers.${TRAEFIK_CONTAINER_NAME}-secure.tls.certresolver=${TRAEFIK_TLS_CERTRESOLVER}"
+      - "traefik.http.routers.${TRAEFIK_CONTAINER_NAME}-secure.tls.domains[0].main=${PROJECT_HOSTNAME}"
+      - "traefik.http.routers.${TRAEFIK_CONTAINER_NAME}-secure.tls.domains[0].sans=*.${PROJECT_HOSTNAME}"
+      - "traefik.http.routers.${TRAEFIK_CONTAINER_NAME}-secure.service=api@internal"
+      ## Middlewares
+      - ${TRAEFIK_DASHBOARD_AUTHENTIK_MIDDLEWARE:-}
+    profiles:
+      - all
+      - traefik
+```
