@@ -25,6 +25,8 @@ This project is built with reuse and modularity in mind. Every service is separa
 name: home-media-docker
 include:
   ####### NETWORK STUFF ########
+  - ./compose-files/traefik-compose.yml
+  - ./compose-files/authentik.yml
   - ./compose-files/vpn.yml
   - ./compose-files/transmission.yml ##  --profile vpn
   - ./compose-files/duplicati.yml ## --profile vpn
@@ -81,7 +83,10 @@ Expand the structure below to see where the files are located.
 ```bash
 Home-Media-Docker/
 ├── compose-files <--------- Add files in this directory
+│   ├── authentik.yml
 │   ├── bookstack.yml
+│   ├── certs
+│   ├── custom-templates
 │   ├── dashy.yml
 │   ├── duplicati.yml
 │   ├── emby.yml
@@ -91,6 +96,8 @@ Home-Media-Docker/
 │   ├── jellyfin.yml
 │   ├── jellyseerr.yml
 │   ├── komga.yml
+│   ├── media
+│   │   └── public
 │   ├── networks.yml
 │   ├── optional-mounted-volumes.yml
 │   ├── pihole.yml
@@ -99,16 +106,23 @@ Home-Media-Docker/
 │   ├── prowlarr.yml
 │   ├── radarr.yml
 │   ├── sonarr.yml
+│   ├── traefik-compose.yml
 │   ├── transmission.yml
 │   ├── vpn.yml
 │   ├── zigbee2mqtt.yml
 │   └── zwavejs.yml
 ├── dashy-config.yml <------ Configuration for Dashy the dashboard
 ├── docker-compose.yml <------ Main compose file. Add includes here
-└── scripts
-    ├── config-check.sh
-    ├── startup.sh
-    └── tearDown.sh
+├── scripts <------ Helper scripts directory
+│   ├── README.md
+│   ├── config-check.sh
+│   ├── hassio.sh
+│   ├── startup.sh
+│   └── tearDown.sh
+└── traefik-data <---- Traefik config files (do not delete if you want to use traefik)
+    ├── acme.json
+    ├── config.yml
+    └── traefik.yml
 ```
 
 </details>
@@ -146,6 +160,7 @@ These are all possible profile options you can use for the associated services.
 
 | **Service**           | **Profiles**                             |
 | --------------------- | ---------------------------------------- |
+| Authentik             | `authentik`,`all`                        |
 | Bookstack/BookstackDB | `bookstack`, `all`                       |
 | Dashy                 | `dashy`, `all`                           |
 | Duplicati             | `duplicati`, `all`                       |
@@ -162,6 +177,7 @@ These are all possible profile options you can use for the associated services.
 | Prowlarr              | `prowlarr`, `all`                        |
 | Radarr                | `radarr`, `all`                          |
 | Sonarr                | `sonarr`, `all`                          |
+| Traefik               | `traefik`, `all`                         |
 | Transmission          | `transmission`, `all`                    |
 | VPN                   | `vpn`, `all`                             |
 | Zigbee2MQTT           | `zigbee2mqtt`, `homeAutomation`, `all`   |
