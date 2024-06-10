@@ -41,10 +41,13 @@ services:
   jellyseerr:
     image: fallenbagel/jellyseerr:latest
     container_name: ${JELLYSEERR_CONTAINER_NAME}
+    env_file:
+      - ./.env
+      - ../../.env
     environment:
       - LOG_LEVEL=${JELLYSEER_LOG_LEVEL}
       - TZ=${TIMEZONE}
-      - JELLYFIN_TYPE=${JELLYSEER_TYPE} # if using emby
+      - JELLYFIN_TYPE=${JELLYSEER_TYPE:-jellyfin} # default is jellyfin, but can do jellyfin|emby|plex
     ports:
       - ${JELLYSEERR_HOST_PORT}:5055
     volumes:
@@ -61,4 +64,14 @@ services:
     profiles:
       - all
       - jellyseerr
+```
+
+### Jellyseerr Example `.env` file
+
+```conf
+## Jellyseerr
+JELLYSEERR_CONTAINER_NAME="jellyseerr"
+JELLYSEERR_HOST_PORT="5055"
+JELLYSEER_LOG_LEVEL="info"
+# JELLYSEER_TYPE="emby"
 ```

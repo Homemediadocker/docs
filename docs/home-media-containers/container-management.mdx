@@ -50,6 +50,9 @@ services:
   portainer:
     container_name: ${PORTAINER_CONTAINER_NAME}
     image: portainer/portainer-ce:latest
+    env_file:
+      - ./.env
+      - ../../.env
     ports:
       - ${PORTAINER_HOST_PORT}:9000 # webui for portainer (http)
       - ${PORTAINER_HOST_PORT_SSL}:9443 # webui for portainer (https)
@@ -72,4 +75,12 @@ services:
     profiles:
       - all
       - portainer
+```
+
+### Portainer Example `.env` file
+
+```conf
+PORTAINER_CONTAINER_NAME="portainer"
+PORTAINER_HOST_PORT="9000"
+PORTAINER_HOST_PORT_SSL="49443"
 ```

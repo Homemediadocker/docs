@@ -1,0 +1,61 @@
+---
+id: wallos
+title: Wallos
+description: Wallos is a self hosted subscription manager. It can tell you how much you are spending on subscriptions.
+sidebar_position: 6
+---
+
+## Wallos
+
+:::info Information
+
+Wallos is a self hosted subscription manager. It can tell you how much you are spending on subscriptions.
+
+:::
+
+- Just Wallos Commands
+
+| Type     | Command                       |
+| -------- | ----------------------------- |
+| Start    | `docker compose up wallos -d` |
+| Shutdown | `docker compose down wallos`  |
+
+<img src="/Home-Media-Docker/img/wallos.png" alt="wallos" />
+
+- Once started, wallos should be hit from this url:
+
+|                  | URL                                                                        |
+| ---------------- | -------------------------------------------------------------------------- |
+| Non-SSL (Web UI) | http://localhost:8282                                                      |
+| Image            | [bellamy/wallos](https://hub.docker.com/r/bellamy/wallos/tags)(Docker Hub) |
+
+### Wallos Example Docker Compose
+
+```yaml
+services:
+  wallos:
+    container_name: ${WALLOS_CONTAINER_NAME:-wallos}
+    image: bellamy/wallos:latest
+    ports:
+      - "${WALLOS_HOST_PORT:-8282}:80/tcp"
+    env_file:
+      - ./.env
+      - ../../.env
+    environment:
+      TZ: ${TIMEZONE}
+    # Volumes store your data between container upgrades
+    volumes:
+      - "${DEFAULT_CONTAINER_DATA_LOCATION}/Wallos/db:/var/www/html/db"
+      - "${DEFAULT_CONTAINER_DATA_LOCATION}/Wallos/logos:/var/www/html/images/uploads/logos"
+    restart: unless-stopped
+    profiles:
+      - all
+      - wallos
+```
+
+### Wallos Example .env file
+
+```conf
+WALLOS_CONTAINER_NAME="wallos"
+WALLOS_HOST_PORT=8282
+```

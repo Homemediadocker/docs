@@ -26,7 +26,7 @@ Mealie is a free and open source recipe manager and cookbook utility. It can imp
 
 |                  | URL                                                                 |
 | ---------------- | ------------------------------------------------------------------- |
-| Non-SSL (Web UI) | http://localhost:9925                                         |
+| Non-SSL (Web UI) | http://localhost:9925                                               |
 | Image            | [hkotel/mealie](https://hub.docker.com/r/hkotel/mealie)(Docker Hub) |
 
 ### Mealie Example Docker Compose
@@ -55,6 +55,9 @@ services:
       - "traefik.http.services.${MEALIE_CONTAINER_NAME}.loadbalancer.server.port=9000"
     volumes:
       - ${DEFAULT_CONTAINER_DATA_LOCATION}/Mealie/app:/app/data/
+    env_file:
+      - ./.env
+      - ../../.env
     environment:
       # Set Backend ENV Variables Here
       ALLOW_SIGNUP: ${MEALIE_ALLOW_SIGNUP:-false}
@@ -90,6 +93,9 @@ services:
     restart: unless-stopped
     volumes:
       - ${DEFAULT_CONTAINER_DATA_LOCATION}/Mealie/db:/var/lib/postgresql/data
+    env_file:
+      - ./.env
+      - ../../.env
     environment:
       POSTGRES_PASSWORD: ${MEALIE_DB_PASSWORD:-mealie}
       POSTGRES_USER: ${MEALIE_DB_USER:-mealie}
@@ -101,4 +107,24 @@ services:
     profiles:
       - all
       - mealie
+```
+
+### Mealie Example `.env` file
+
+```conf
+MEALIE_HOST_PORT="9925"
+MEALIE_CONTAINER_NAME="mealie"
+MEALIE_POSTGRES_CONTAINER_NAME="mealie-postgres"
+##### MEALIE
+MEALIE_VERSION_TAG="latest"
+MEALIE_MEMORY_LIMIT="512M"
+MEALIE_ALLOW_SIGNUP="false"
+MEALIE_MAX_WORKERS=1
+MEALIE_MAX_WEB_CONCURRENCY=2
+
+### MEALIE SMTP SETTINGS
+MEALIE_SMTP_HOST=smtp.gmail.com
+MEALIE_SMTP_FROM_EMAIL=example@gmail.com
+MEALIE_SMTP_USER=example@gmail.com
+MEALIE_SMTP_PASSWORD=test1234
 ```

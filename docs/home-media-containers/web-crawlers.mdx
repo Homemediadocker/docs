@@ -36,6 +36,9 @@ services:
   prowlarr:
     image: lscr.io/linuxserver/prowlarr:latest
     container_name: ${PROWLARR_CONTAINER_NAME}
+    env_file:
+      - ./.env
+      - ../../.env
     environment:
       - PUID=${UID}
       - PGID=${GID}
@@ -60,6 +63,13 @@ services:
       - prowlarr
       - radarr
       - sonarr
+```
+
+### Prowlarr Example `.env` file
+
+```conf
+PROWLARR_HOST_PORT="9696"
+PROWLARR_CONTAINER_NAME="prowlarr"
 ```
 
 ## Jackett
@@ -96,6 +106,9 @@ services:
   jackett: # This is an option if Prowlarr doesn't work correctly
     image: lscr.io/linuxserver/jackett:latest
     container_name: ${JACKETT_CONTAINER_NAME}
+    env_file:
+      - ./.env
+      - ../../.env
     environment:
       - PUID=${UID}
       - PGID=${GID}
@@ -104,10 +117,20 @@ services:
       - RUN_OPTS=${JACKETT_RUN_OPTS} #optional
     volumes:
       - ${DEFAULT_CONTAINER_DATA_LOCATION}/Jackett:/config
-      - ${LOCAL_DOWNLOADS_PATH}:/downloads
+      - ${LOCAL_DOWNLOADS_PATH:-./.local/downloads}:/downloads
     ports:
       - ${JACKETT_HOST_PORT}:9117
     restart: unless-stopped
     profiles:
       - jackett
+```
+
+### Jackett Example `.env` file
+
+```conf
+## JACKETT - THIS IS PROBABLY NOT USED BUT HERE THEY ARE
+JACKETT_CONTAINER_NAME="jackett"
+JACKETT_HOST_PORT="9117"
+JACKETT_RUN_OPTS=""
+JACKETT_AUTO_UPDATE="true"
 ```

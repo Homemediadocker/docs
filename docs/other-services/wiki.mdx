@@ -36,6 +36,9 @@ services:
   bookstack:
     image: lscr.io/linuxserver/bookstack
     container_name: ${BOOKSTACK_APP_CONTAINER_NAME}
+    env_file:
+      - ./.env
+      - ../../.env
     environment:
       - PUID=${UID}
       - PGID=${GID}
@@ -71,6 +74,9 @@ services:
   bookstack_db:
     image: lscr.io/linuxserver/mariadb
     container_name: ${BOOKSTACK_DB_CONTAINER_NAME}
+    env_file:
+      - ./.env
+      - ../../.env
     environment:
       - PUID=${UID}
       - PGID=${GID}
@@ -87,5 +93,28 @@ services:
     profiles:
       - all
       - bookstack
+```
 
+### Bookstack Example `.env` file
+
+```conf
+BOOKSTACK_APP_CONTAINER_NAME="bookstack"
+BOOKSTACK_DB_CONTAINER_NAME="bookstack_db"
+
+## Bookstack - OSS Confluence Alternative
+
+BOOKSTACK_PORT=6875
+BOOKSTACK_WEB_HOST_HTTP_PORT="${BOOKSTACK_PORT}"
+BOOKSTACK_TRAEFIK_APP_URL="http://${BOOKSTACK_APP_CONTAINER_NAME}.${PROJECT_HOSTNAME}" #CHANGE_ME - if you are hosting outside your local machine
+
+# BOOKSTACK_APP_URL="http://localhost:${BOOKSTACK_PORT}" #CHANGE_ME - if you are hosting outside your local machine
+
+BOOKSTACK_APP_URL="${BOOKSTACK_TRAEFIK_APP_URL}" #CHANGE_ME - if you are hosting outside your local machine
+
+BOOKSTACK_DB_HOST="${BOOKSTACK_DB_CONTAINER_NAME}"
+BOOKSTACK_DB_PORT=3306
+BOOKSTACK_DB_NAME="bookstackapp" #CHANGE_ME - optionally change. this can stay
+BOOKSTACK_DB_USER="bookstack" #CHANGE_ME
+BOOKSTACK_DB_PASS="kcatskoob" #CHANGE_ME
+BOOKSTACK_DB_ROOT_PASS="kcatskoob" #CHANGE_ME
 ```

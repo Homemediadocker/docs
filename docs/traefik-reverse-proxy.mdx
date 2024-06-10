@@ -68,11 +68,14 @@ COMPOSE_PROFILES=bookstack,dashy,duplicati,...,traefik
 
 ### Traefik Dashboard
 
-<img src="/Home-Media-Docker/img/traefik-dashboard.png" alt="traefik-dashboard" />
+<img
+  src="/Home-Media-Docker/img/traefik-dashboard.png"
+  alt="traefik-dashboard"
+/>
 
 ### Traefik Example Docker Compose
 
-```yml
+```yaml
 services:
   traefik:
     image: traefik:v3.0
@@ -87,6 +90,9 @@ services:
       - 443:443/tcp
       - 443:443/udp # Uncomment if you want HTTP3
       - ${TRAEFIK_DASHBOARD_PORT}:8080
+    env_file:
+      - ./.env
+      - ../../.env
     environment:
       # CF_DNS_API_TOKEN_FILE: /run/secrets/cf_api_token # note using _FILE for docker secrets
       CF_DNS_API_TOKEN: ${CF_DNS_API_TOKEN} # if using .env
@@ -97,9 +103,9 @@ services:
     volumes:
       - /etc/localtime:/etc/localtime:ro
       - /var/run/docker.sock:/var/run/docker.sock:ro
-      - ../traefik-data/traefik.yml:/traefik.yml:ro
-      - ../traefik-data/acme.json:/acme.json
-      - ../traefik-data/config.yml:/config.yml:ro
+      - ../../traefik-data/traefik.yml:/traefik.yml:ro
+      - ../../traefik-data/acme.json:/acme.json
+      - ../../traefik-data/config.yml:/config.yml:ro
     labels:
       - "traefik.enable=true"
       - "traefik.docker.network=home-media-docker_homelab"
@@ -122,4 +128,13 @@ services:
     profiles:
       - all
       - traefik
+```
+
+### Traefik Example `.env` file
+
+```conf
+####### TRAEFIK/ACME ############
+TRAEFIK_CONFIG_FILE_LOCATION="../../traefik.yml"
+TRAEFIK_CONTAINER_NAME="traefik"
+TRAEFIK_DASHBOARD_PORT="8080"
 ```
