@@ -39,6 +39,14 @@ sidebar_position: 5
   </tr>
 </table>
 
+### `copyenv.sh`
+
+- This is is necessary to help get your environment up and going quickly. Sure, you can copy and paste each `.env-example` yourself, but this script aims to simplify the process.
+- You can run this script once and never have to run it again.
+- If an `.env` file exists already in a compose directory, it will not be overwritten. 
+- Any new compose files added to this project should be added with an associated `.env-example` file. You can then run the script to generate a `.env` if you choose, or just manually copy/paste a `.env` into the directory.
+- As the project grows/updates, this should be able to copy the `.env-example` files I create and place in this project without you needing to go track down the changes. 
+
 ### `config-check.sh`
 
 - This is just a useful script to check your compose config and uses your `COMPOSE_PROFILES` env variable to build the configuration.
