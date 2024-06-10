@@ -41,6 +41,9 @@ services:
     image: lscr.io/linuxserver/transmission:latest
     container_name: ${TRANSMISSION_CONTAINER_NAME}
     network_mode: service:vpn
+    env_file:
+      - ./.env
+      - ../../.env
     environment:
       - PUID=${UID}
       - PGID=${GID}
@@ -53,7 +56,7 @@ services:
       - HOST_WHITELIST=${TRANSMISSION_HOST_WHITELIST} #optional
     volumes:
       - ${DEFAULT_CONTAINER_DATA_LOCATION}/Transmission:/config
-      - ${LOCAL_DOWNLOADS_PATH}:/downloads
+      - ${LOCAL_DOWNLOADS_PATH:-./.local/downloads}:/downloads
     # ports: ### Ports are not allowed when network_mode: is service:vpn
     #   - 9091:9091 # webui
     #   - 51413:51413 # for seed discovery - greatly improves performance even if not seeding
@@ -61,12 +64,23 @@ services:
     restart: unless-stopped
     depends_on:
       - vpn
-      - prowlarr
-      - sonarr
-      - radarr
+      # - prowlarr
+      # - sonarr
+      # - radarr
     profiles:
       - all
       - transmission
+```
+
+### Transmission Example `.env` file
+
+```conf
+## TRANSMISSION
+TRANSMISSION_USER="transmission" #CHANGE_ME
+TRANSMISSION_PASS="noissimsnart" #CHANGE_ME
+TRANSMISSION_PEERPORT=""
+TRANSMISSION_HOST_WHITELIST=""
+TRANSMISSION_CONTAINER_NAME="transmission"
 ```
 
 :::warning Heads Up!

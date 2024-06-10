@@ -66,6 +66,11 @@ include:
 
   ######## FAMILY STUFF ###################
   - ./compose-files/mealie.yml
+  - ./compose-files/mattermost/mattermost.yml
+  - ./compose-files/wallos/wallos.yml
+
+  ######## PASSWORD MANAGER ###################
+  - ./compose-files/vaultwarden/vaultwarden.yml
 ```
 
 </details>
@@ -86,41 +91,95 @@ Expand the structure below to see where the files are located.
 ```bash
 Home-Media-Docker/
 ├── compose-files <--------- Add files in this directory
-│   ├── authentik.yml
-│   ├── bookstack.yml
-│   ├── certs
-│   ├── custom-templates
-│   ├── dashy.yml
-│   ├── duplicati.yml
-│   ├── emby.yml
-│   ├── heimdall.yml
-│   ├── homeassistant.yml
-│   ├── jackett.yml
-│   ├── jellyfin.yml
-│   ├── jellyseerr.yml
-│   ├── komga.yml
-│   ├── mealie.yml
-│   ├── networks.yml
-│   ├── optional-mounted-volumes.yml
-│   ├── pihole.yml
-│   ├── plex.yml
-│   ├── portainer.yml
-│   ├── prowlarr.yml
-│   ├── radarr.yml
-│   ├── sonarr.yml
-│   ├── traefik-compose.yml
-│   ├── transmission.yml
-│   ├── vpn.yml
-│   ├── zigbee2mqtt.yml
-│   └── zwavejs.yml
+│   ├── authentik
+│   │   ├── .env-example
+│   │   └── authentik.yml
+│   ├── bookstack
+│   │   ├── .env-example
+│   │   └── bookstack.yml
+│   ├── dashy
+│   │   ├── .env-example
+│   │   └── dashy.yml
+│   ├── duplicati
+│   │   ├── .env-example
+│   │   └── duplicati.yml
+│   ├── emby
+│   │   ├── .env-example
+│   │   └── emby.yml
+│   ├── heimdall
+│   │   ├── .env-example
+│   │   └── heimdall.yml
+│   ├── homeassistant
+│   │   ├── .env-example
+│   │   └── homeassistant.yml
+│   ├── jackett
+│   │   ├── .env-example
+│   │   └── jackett.yml
+│   ├── jellyfin
+│   │   ├── .env-example
+│   │   └── jellyfin.yml
+│   ├── jellyseerr
+│   │   ├── .env-example
+│   │   └── jellyseerr.yml
+│   ├── komga
+│   │   ├── .env-example
+│   │   └── komga.yml
+│   ├── mattermost
+│   │   ├── .env-example
+│   │   └── mattermost.yml
+│   ├── mealie
+│   │   ├── .env-example
+│   │   └── mealie.yml
+│   ├── networks.yml
+│   ├── optional-mounted-volumes.yml
+│   ├── pihole
+│   │   ├── .env-example
+│   │   └── pihole.yml
+│   ├── plex
+│   │   ├── .env-example
+│   │   └── plex.yml
+│   ├── portainer
+│   │   ├── .env-example
+│   │   └── portainer.yml
+│   ├── prowlarr
+│   │   ├── .env-example
+│   │   └── prowlarr.yml
+│   ├── radarr
+│   │   ├── .env-example
+│   │   └── radarr.yml
+│   ├── sonarr
+│   │   ├── .env-example
+│   │   └── sonarr.yml
+│   ├── traefik
+│   │   ├── .env-example
+│   │   └── traefik-compose.yml
+│   ├── transmission
+│   │   ├── .env-example
+│   │   └── transmission.yml
+│   ├── vaultwarden
+│   │   ├── .env-example
+│   │   └── vaultwarden.yml
+│   ├── vpn
+│   │   ├── .env-example
+│   │   └── vpn.yml
+│   ├── wallos
+│   │   ├── .env-example
+│   │   └── wallos.yml
+│   ├── zigbee2mqtt
+│   │   ├── .env-example
+│   │   └── zigbee2mqtt.yml
+│   └── zwavejs
+│   │    ├── .env-example
+│   │    └── zwavejs.yml
 ├── dashy-config.yml <------ Configuration for Dashy the dashboard
 ├── docker-compose.yml <------ Main compose file. Add includes here
 ├── scripts <------ Helper scripts directory
-│   ├── README.md
-│   ├── config-check.sh
-│   ├── hassio.sh
-│   ├── startup.sh
-│   └── tearDown.sh
+│   ├── README.md
+│   ├── config-check.sh
+│   ├── copyenv.sh
+│   ├── hassio.sh
+│   ├── startup.sh
+│   └── tearDown.sh
 └── traefik-data <---- Traefik config files (do not delete if you want to use traefik)
     ├── acme.json
     ├── config.yml
@@ -132,6 +191,8 @@ Home-Media-Docker/
 ### Why?
 
 This allows for services to be added and removed extremely easily. If you want to add a new `yml` of your own to this, it is literally just a matter of adding the item to the `include:` array.
+
+Each compose file is sorted into its own directory with its own .env-example file to get you started. There are some variables in the root `.env` file that will need to be shared across the containers.
 
 ## Compose Profiles
 
@@ -173,6 +234,7 @@ These are all possible profile options you can use for the associated services.
 | Jellyfin              | `jellyfin`                               |
 | Jellyseerr            | `jellyseerr`, `all`                      |
 | Komga                 | `komga`, `all`                           |
+| Mattermost            | `mattermost`, `all`                      |
 | Mealie                | `mealie`, `all`                          |
 | PiHole                | `pihole`, `all`                          |
 | Plex                  | `plex`                                   |
@@ -182,6 +244,8 @@ These are all possible profile options you can use for the associated services.
 | Sonarr                | `sonarr`, `all`                          |
 | Traefik               | `traefik`, `all`                         |
 | Transmission          | `transmission`, `all`                    |
+| Vaultwarden           | `vaultwarden`, `all`                     |
 | VPN                   | `vpn`, `all`                             |
+| Wallos                | `wallos`, `all`                          |
 | Zigbee2MQTT           | `zigbee2mqtt`, `homeAutomation`, `all`   |
 | ZwaveJS               | `zwavejs`, `homeAutomation`, `all`       |

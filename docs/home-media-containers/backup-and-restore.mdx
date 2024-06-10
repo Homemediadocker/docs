@@ -46,6 +46,9 @@ services:
     image: lscr.io/linuxserver/duplicati:latest
     container_name: ${DUPLICATI_CONTAINER_NAME}
     network_mode: service:vpn
+    env_file:
+      - ./.env
+      - ../../.env
     environment:
       - PUID=${UID}
       - PGID=${GID}
@@ -63,4 +66,13 @@ services:
     profiles:
       - all
       - duplicati
+```
+
+### Duplicati Example `.env` file
+
+```conf
+## DUPLICATI
+DUPLICATI_CONTAINER_NAME="duplicati"
+DUPLICATI_HOST_PORT="8200"
+DUPLICATI_CLI_ARGS=""
 ```

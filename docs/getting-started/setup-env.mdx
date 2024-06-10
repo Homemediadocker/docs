@@ -7,38 +7,39 @@ sidebar_position: 2
 
 # Env Setup
 
-:::tip Note
-Additional modification can be done in the [docker-compose.yml](https://github.com/Homemediadocker/Home-Media-Docker/blob/main/docker-compose.yml), but most things are variablized for you in the .env file. Please read through these steps to configure for your host machine.
-:::
+:::tip Heads Up!
 
-- Do this to create your `.env` file:
+Each compose-file has its own `.env` file associated with it for modularity. Since there are a lot of different ways to spin up your environment, you can either copy the parts you want from this project and use them individually, or use the project as is, which you can do in an incremental way.
+
+- Do this to create your `.env` files:
 
 ```sh
-cp .env-example .env
+./scripts/copyenv.sh
 ```
 
-You will need to adjust the newly created `.env` file with values specific to your machine. These values are marked with a comment `#CHANGE_ME`
+You will need to adjust the newly created `.env` file with values specific to your machine. These values are marked with a comment `#CHANGE_ME` - there may be a lot more you need to change but the project will spin up as-is. (Like credentials or small config options)
 
-Literally everything in the docker compose file is variablized as much as possible.
+Literally everything in the docker compose files are variablized as much as possible so all you have to change is the associated .env variable.
+
+:::
 
 <details>
-    <summary><strong>.env file explained</strong></summary>
+    <summary><strong>root .env file explained</strong></summary>
 
 ```bash
 ## CONTAINER  DATA LOCATION
 # This will place the container data in the current repo location.
 # You can change this and all data will be placed in that location.
-DEFAULT_CONTAINER_DATA_LOCATION="./.containers" # Change this if you want the data outside of this repo
-TRAEFIK_CONFIG_DIRECTORY="../traefik-data"
-PROJECT_HOSTNAME="localhost"
+DEFAULT_CONTAINER_DATA_LOCATION="../../.containers" #CHANGE_ME if you want to house your data elsewhere outside of this project directory e.g. a network volume /media/my-network-smb/container-data
+PROJECT_HOSTNAME="localhost" #CHANGE_ME if you are hosting outside of your local machine
 
-####### TRAEFIK/ACME ############
-CF_API_EMAIL="" # Cloudflare email address used
-CF_DNS_API_TOKEN="" # Cloudflare api token (global)
-ACME_DNS_CHALLENGE_PROVIDER="cloudflare" # The provider name -- cloudflare and netlify are supported out of the box
-TRAEFIK_TLS_CERTRESOLVER="cloudflare" # The provider name -- cloudflare and netlify are supported out of the box
-TRAEFIK_DASHBOARD_CREDENTIALS=admin:$$2y$$05$$cqTXRio8juH740Wo7m4y5OWFbQKB0eTaHexKPYmssn4qctTe8ElQe # just admin/password but hashed.
-TRAEFIK_NETLIFY_TOKEN="asdfasdfasdfasdfasdfasdfasdfasdf" # API Token from netlify dashboard
+#### TRAEFIK and AUTHENTIK GLOBALS
+CF_API_EMAIL="" #CHANGE_ME
+CF_DNS_API_TOKEN="" #CHANGE_ME
+ACME_DNS_CHALLENGE_PROVIDER="cloudflare" #CHANGE_ME
+TRAEFIK_TLS_CERTRESOLVER="cloudflare" #CHANGE_ME
+TRAEFIK_DASHBOARD_CREDENTIALS=admin:$$2y$$05$$cqTXRio8juH740Wo7m4y5OWFbQKB0eTaHexKPYmssn4qctTe8ElQe #CHANGE_ME
+TRAEFIK_NETLIFY_TOKEN="asdfasdfasdfasdfasdfasdfasdfasdf" #CHANGE_ME
 
 ## COMPOSE_PROFILES ---- Use this variable to select which containers you would like to spin up.
 ## Or you can just pass "all" into the variable and it will spin up everything (except the media server, that requires you to pass it in yourself)
@@ -50,253 +51,52 @@ TRAEFIK_NETLIFY_TOKEN="asdfasdfasdfasdfasdfasdfasdfasdf" # API Token from netlif
 ## Or just individually comma separate your services.
 COMPOSE_PROFILES=bookstack,dashy,duplicati,jellyseerr,komga,pihole,portainer,prowlarr,radarr,sonarr,transmission,vpn,jellyfin,homeassistant,zwavejs,zigbee2mqtt,mealie
 
+### ENABLE TRAEFIK - keep COMPOSE_PROFILES above
+COMPOSE_PROFILES=${COMPOSE_PROFILES},traefik ## Not required but recommeneded for reverse proxy
+
+### ENABLE AUTHENTIK - keep COMPOSE_PROFILES above and Traefik
+# COMPOSE_PROFILES=${COMPOSE_PROFILES},authentik
+
 ## OPTIONS ---- bookstack,dashy,duplicati,jellyseerr,komga,pihole,portainer,prowlarr,radarr,sonarr,transmission,vpn
 ## MORE OPTIONS- jellyfin,emby,plex,homeassistant,zwavejs,zigbee2mqtt,homeAutomation,all
 
 ############################################
 ########## CONTAINER NAMES #################
 ############################################
-BOOKSTACK_APP_CONTAINER_NAME="bookstack"
-BOOKSTACK_DB_CONTAINER_NAME="bookstack_db"
-DASHY_CONTAINER_NAME="dashy"
-DUPLICATI_CONTAINER_NAME="duplicati"
-EMBY_CONTAINER_NAME="emby"
-HEIMDALL_CONTAINER_NAME="heimdall"
-HOME_ASSISTANT_CONTAINER_NAME="homeassistant"
-JACKETT_CONTAINER_NAME="jackett"
-JELLYFIN_CONTAINER_NAME="jellyfin"
-JELLYSEERR_CONTAINER_NAME="jellyseerr"
-KOMGA_CONTAINER_NAME="komga"
-MEALIE_CONTAINER_NAME="mealie"
-MEALIE_POSTGRES_CONTAINER_NAME="mealie-postgres"
-PIHOLE_CONTAINER_NAME="pihole"
-PLEX_CONTAINER_NAME="plex"
-PORTAINER_CONTAINER_NAME="portainer"
-PROWLARR_CONTAINER_NAME="prowlarr"
-RADARR_CONTAINER_NAME="radarr"
-SONARR_CONTAINER_NAME="sonarr"
-TRAEFIK_CONTAINER_NAME="traefik"
-TRANSMISSION_CONTAINER_NAME="transmission"
-VPN_CONTAINER_NAME="vpn"
-ZIGBEE2MQTT_CONTAINER_NAME="zigbee2mqtt"
-ZWAVE_JS_CONTAINER_NAME="zwavejs"
-
-## NORDVPN SPECIFIC VARIABLES
-TOKEN=11111111111223123123123123asdba123 # This is specific to nord VPN - found in the account settings and generated by the user
-PRIVATE_KEY=sdlfkabakjhslkdgjadlfkjasdfhaskdjhagsdg ##CHANGE ME - follow instructions to obtain the private key
-NORD_TECHNOLOGY=NordLynx # NordLynx or OpenVPN
-NORD_CONNECT_AREA=United_States # You can separate this by country and city too, but if you leave it blank it will just default to the recommended fastest server
-
-VPN_DNS="8.8.8.8,8.8.4.4" #CHANGE_ME - this is google's DNS if that works for you
-VPN_ALLOWED_IPS="0.0.0.0/0" #CHANGE_ME - this allows all IPs
-VPN_NET_LOCAL="172.16.0.0/12,192.168.0.0/16" #CHANGE_ME if your network doesn't fit this schema
 
 ## User Host Machine - unix machines can find this by doing `id <username>`
-UID="111" ##CHANGE ME this is usually the user id on the host machine that will be running the docker compose command. But you can make this be a less privileged user and that is fine too
-GID="111" ##CHANGE ME group id of the associated user(s) that may be running this. This is passed into the docker env so keep in mind that this will be the only one in there.
-TIMEZONE="America/Chicago" ##CHANGE ME - Your timezone. This gets passed into basically every container.
-
-## Samba
-SMB_USER="samba" ##CHANGE ME If you are on Mac, this SMB user is what will be used to mount the network drives on your machine.
-SMB_PASS="test" ##CHANGE ME If you are on Mac, this SMB password is what will be used to mount the network drives on your machine.
-
-## unix machines can find this by doing `id <username>` for the desired user's id on that machine
-SMB_UID="12312" ##CHANGE ME The user ID that has access to the smb shares
-SMB_GID="123123" ##CHANGE ME the group ID that has access to the smb shares
-
-## Network Paths
-MOVIE_NETWORK_SHARE="//IP.IP.IP.IP/SHARENAME" ##CHANGE ME network share for movies content
-TV_NETWORK_SHARE="//IP.IP.IP.IP/SHARENAME" ##CHANGE ME network share for tv content
+UID="1000" #CHANGE_ME
+GID="1000" #CHANGE_ME
+TIMEZONE="America/Chicago" #CHANGE_ME - This is Central Time Zone by default
 
 ## Local Paths
-LOCAL_MOVIES_PATH="/Volumes/Movies" # #CHANGE ME - this is if you don't use the network shares in the dockerfile, and want to mount them on the host machine.
-LOCAL_TV_PATH="/Volumes/Television" # #CHANGE ME - this is if you don't use the network shares in the dockerfile, and want to mount them on the host machine.
-LOCAL_BOOKS_PATH="/Volumes/Books" #CHANGE_ME - this is if you don't use the network shares in the dockerfile, and want to mount them on the host machine.
-LOCAL_DOWNLOADS_PATH="/Volumes/Downloads" # #CHANGE ME - this is if you don't use the network shares in the dockerfile, and want to mount them on the host machine. This is for transmission specifically.
+LOCAL_MOVIES_PATH="/Volumes/Movies" #CHANGE_ME
+LOCAL_TV_PATH="/Volumes/Television" #CHANGE_ME
+LOCAL_BOOKS_PATH="/Volumes/Books" #CHANGE_ME
+LOCAL_DOWNLOADS_PATH="/Volumes/Downloads" #CHANGE_ME
+LOCAL_BACKUPS_PATH="/Volumes/Backups" #CHANGE_ME
 
-## Jellyseerr
-JELLYSEER_LOG_LEVEL="info" # change this to `debug` to show more logs.
-JELLYSEER_TYPE="emby" # #CHANGE ME -  emby, jellyfin, plex --- those are all options
+## Samba
+SMB_USER="samba" #CHANGE_ME
+SMB_PASS="test" #CHANGE_ME
 
-## PLEX
-PLEX_CLAIM=""
-PLEX_VERSION="docker"
+## unix machines can find this by doing `id <username>` for the desired user's id on that machine
+SMB_UID="12312" #CHANGE_ME
+SMB_GID="123123" #CHANGE_ME
 
-## Komga
-KOMGA_LIBRARIES_SCAN_STARTUP="true"
-KOMGA_JAVA_OPTS="-Xmx8g" ## 8 GB - this helps reduce times waiting for pages to process and reduces crashing
-KOMGA_REMEMBERME_KEY="" #CHANGE ME - need to add this to be able to remember a login
+## Network Paths
+MOVIE_NETWORK_SHARE="//IP.IP.IP.IP/SHARENAME" #CHANGE_ME
+TV_NETWORK_SHARE="//IP.IP.IP.IP/SHARENAME" #CHANGE_ME
 
-## JACKETT - THIS IS PROBABLY NOT USED BUT HERE THEY ARE
-JACKETT_RUN_OPTS=""
-JACKETT_AUTO_UPDATE="true"
+PIHOLE_NETWORK_GATEWAY="192.168.1.1" #CHANGE_ME
+PIHOLE_NETWORK_ADDRESS_POOL="192.168.1.0/24" #CHANGE_ME
+PIHOLE_NETWORK_INTERFACE="eth0" #CHANGE_ME
 
-## TRANSMISSION
-TRANSMISSION_USER="transmission" ### #CHANGE ME
-TRANSMISSION_PASS="noissimsnart" ### #CHANGE ME
-TRANSMISSION_PEERPORT=""
-TRANSMISSION_HOST_WHITELIST=""
-
-## DUPLICATI
-DUPLICATI_CLI_ARGS=""
-
-## ZWAVE2MQTT (ZWAVEJS)
-ZWAVE_STICK_DEVICE_PATH="/path/to/usb" #CHANGE_ME
-# ZWAVE_STICK_DEVICE_PATH="/dev/cu.usbserial-533D0042421"
-
-## Zigbee2MQTT (Zigbee)
-ZIGBEE_STICK_DEVICE_PATH="/path/to/usb" #CHANGE_ME
-#ZIGBEE_STICK_DEVICE_PATH="/dev/serial/by-id/usb-Texas_Instruments_TI_CC2531_USB_CDC___0X00124B0018ED3DDF-if00"
-
-## PIHOLE
-PIHOLE_SECURE_WEB_PASSWORD="pihole"
-PIHOLE_STATIC_IP_ADDRESS="192.168.1.200"
-PIHOLE_NETWORK_GATEWAY="192.168.1.1"
-PIHOLE_NETWORK_ADDRESS_POOL="192.168.1.0/24"
-PIHOLE_NETWORK_INTERFACE="eth0"
-
-## Dashy
-# Your Backup ID: xxxx-xxxx-xxxx-xxxx
-DASHY_CONFIG_LOCATION="./dashy-config.yml"
-
-## Bookstack - OSS Confluence Alternative
-BOOKSTACK_PORT="6875"
-BOOKSTACK_APP_URL="https://${PROJECT_HOSTNAME}" #CHANGE_ME - if you are hosting outside your local machine
-
-
-BOOKSTACK_DB_HOST="${BOOKSTACK_DB_CONTAINER_NAME}"
-BOOKSTACK_DB_PORT=3306
-BOOKSTACK_DB_NAME="bookstackapp" #CHANGE_ME - optionally change. this can stay
-BOOKSTACK_DB_USER="bookstack" #CHANGE_ME
-BOOKSTACK_DB_PASS="kcatskoob" #CHANGE_ME
-BOOKSTACK_DB_ROOT_PASS="kcatskoob" #CHANGE_ME
-
-##### MEALIE
-MEALIE_VERSION_TAG="latest"
-MEALIE_MEMORY_LIMIT="512M"
-MEALIE_ALLOW_SIGNUP="false"
-MEALIE_MAX_WORKERS=1
-MEALIE_MAX_WEB_CONCURRENCY=2
-
-### MEALIE SMTP SETTINGS
-MEALIE_SMTP_HOST=smtp.gmail.com
-MEALIE_SMTP_FROM_EMAIL=example@gmail.com
-MEALIE_SMTP_USER=example@gmail.com
-MEALIE_SMTP_PASSWORD=test1234
-
-#######################################################################################################################
-##################################### DANGER BELOW - THESE ARE DEFAULT VALUES FOR PORTS ###############################
-#######################################################################################################################
-
-## EXPOSED PORTS ---
-## These are defaults and can be changed,
-## but use caution and take backups because changing these
-## may lead to loss of access to a service
-BOOKSTACK_WEB_HOST_HTTP_PORT="${BOOKSTACK_PORT}"
-DASHY_HOST_HTTP_PORT="4000"
 DUPLICATI_HOST_PORT="8200"
-EMBY_HOST_PORT="8096"
-EMBY_HOST_PORT_SSL="8920"
-EMBYSTAT_HOST_PORT="6555"
-HEIMDALL_HOST_HTTP_PORT="3080"
-HEIMDALL_HOST_HTTPS_PORT="30803"
-JACKETT_HOST_PORT="9117"
-JELLYFIN_HOST_PORT="8096"
-JELLYFIN_HOST_PORT_SSL="8920"
-JELLYSEERR_HOST_PORT="5055"
-KOMGA_HOST_PORT="8341"
-MEALIE_HOST_PORT="9925"
-PIHOLE_HOST_PORT="8880"
-PLEX_HOST_PORT="32400"
-PORTAINER_HOST_PORT="9000"
-PORTAINER_HOST_PORT_SSL="49443"
-PROWLARR_HOST_PORT="9696"
-RADARR_HOST_PORT="7878"
-SONARR_HOST_PORT="8989"
-SONARR_HOST_PORT_SSL="9898"
-TRAEFIK_DASHBOARD_PORT="8080"
 TRANSMISSION_HOST_PORT="9091"
 TRANSMISSION_SEED_DISCOVERY_PORT_TCP="51413"
 TRANSMISSION_SEED_DISCOVERY_PORT_UDP="51413"
 
-
-#### HOME AUTOMATION EXPOSED PORTS ####
-HOME_ASSISTANT_HOST_PORT="8123"
-ZIGBEE2MQTT_HOST_PORT="38080"
-ZWAVE_JS_UI_HOST_PORT="8091"
-ZWAVE_JS_WS_HOST_PORT="3000"
-
-## Gitlab specific
-RUNNER_NAME=RUNNER-NAME
-REGISTRATION_TOKEN=TOKEN
-CI_SERVER_URL=https://gitlab.com/
-
-##### AUTHENTIK ######
-#### I KNOW SOME OF THESE ARE DUPED. I'll clean these up in a later commit
-# .env (in ALL)
-DOCKERDIR=${DEFAULT_CONTAINER_DATA_LOCATION}  # CHANGEME
-PUID=${UID}               # CHANGEME
-PGID=${GID}               # CHANGEME
-TZ=${TIMEZONE}
-DOMAIN=${PROJECT_HOSTNAME}    # CHANGEME
-
-
-################################################################
-# PostgreSQL
-################################################################
-POSTGRES_DB=pgauthentik
-POSTGRES_USER=authentik
-POSTGRES_PASSWORD=testing123
-PG_PASS=testing123
-
-
-################################################################
-# Authentik
-################################################################
-AUTHENTIK_REDIS__HOST=authentik_redis
-AUTHENTIK_LISTEN__HTTP=authentik-server:8000
-AUTHENTIK_LISTEN__HTTPS=authentik-server:8443
-
-AUTHENTIK_POSTGRESQL__HOST=authentik_postgresql
-AUTHENTIK_POSTGRESQL__NAME=$POSTGRES_DB
-AUTHENTIK_POSTGRESQL__USER=$POSTGRES_USER
-AUTHENTIK_POSTGRESQL__PASSWORD=$POSTGRES_PASSWORD
-
-AUTHENTIK_ERROR_REPORTING__ENABLED: "false"
-AUTHENTIK_SECRET_KEY=123123123123123123123123123123
-# WORKERS=2
-
-# SMTP Host Emails are sent to
-AUTHENTIK_EMAIL__HOST=smtp.gmail.com
-AUTHENTIK_EMAIL__PORT=587
-# Optionally authenticate (don't add quotation marks to your password)
-AUTHENTIK_EMAIL__USERNAME=CHANGEME@gmail.com
-AUTHENTIK_EMAIL__PASSWORD=/run/secrets/authelia_notifier_smtp_password
-# Use StartTLS
-AUTHENTIK_EMAIL__USE_TLS=false
-# Use SSL
-AUTHENTIK_EMAIL__USE_SSL=false
-AUTHENTIK_EMAIL__TIMEOUT=10
-# Email address authentik will send from, should have a correct @domain
-AUTHENTIK_EMAIL__FROM=CHANGEME@gmail.com
-
-#########################################################################################
-########## ENABLE MIDDLEWARES IF YOU WANT TO USE PROXY AUTHENTICATION ###################
-#########################################################################################
-# PROWLARR_AUTHENTIK_MIDDLEWARE="traefik.http.routers.${PROWLARR_CONTAINER_NAME}.middlewares=middlewares-authentik@file"
-# RADARR_AUTHENTIK_MIDDLEWARE="traefik.http.routers.${RADARR_CONTAINER_NAME}.middlewares=middlewares-authentik@file"
-# SONARR_AUTHENTIK_MIDDLEWARE="traefik.http.routers.${SONARR_CONTAINER_NAME}.middlewares=middlewares-authentik@file"
-# TRAEFIK_DASHBOARD_AUTHENTIK_MIDDLEWARE="traefik.http.routers.${TRAEFIK_CONTAINER_NAME}.middlewares=middlewares-authentik@file"
-
-
-################################################################
-# GeoIP
-################################################################
-GEOIPUPDATE_ACCOUNT_ID=CHANGEME
-GEOIPUPDATE_LICENSE_KEY=CHANGEME
-AUTHENTIK_AUTHENTIK__GEOIP=/geoip/GeoLite2-City.mmdb
-GEOIPUPDATE_EDITION_IDS=GeoLite2-City
-GEOIPUPDATE_FREQUENCY=8
 ```
 
 </details>
@@ -317,9 +117,11 @@ Doing this allows you to enable whatever services you would like to run in the s
 
 **See [Docker Info](./docker-info.mdx) for more information regarding including other services.**
 
-## Nord VPN Variables
+## Specific Compose Project Info `.env`
 
-### Private Key / TOKEN
+### Nord VPN Variables
+
+#### Private Key / TOKEN
 
 :::info Important!
 Token and subscription to NordVPN Is needed to use this.
@@ -327,7 +129,7 @@ Token and subscription to NordVPN Is needed to use this.
 :::
 This is required to run Nord VPN. Without it, the vpn will not start up or be linked to an account.
 
-### IP Configuration
+#### IP Configuration
 
 ```shell
 VPN_DNS="8.8.8.8,8.8.4.4" #CHANGE_ME - this is google's DNS if that works for you
@@ -338,7 +140,7 @@ VPN_NET_LOCAL="172.16.0.0/12,192.168.0.0/16" #CHANGE_ME if your network doesn't 
 - The `VPN_ALLOWED_IPS` is just a filler - this allows all IPs to connect to your instance. Configure this with a proper subnet here with allowed hosts to connect.
 - The `VPN_NET_LOCAL` - These are local IP Addresses. This should work for most home networks. This is a comma-separated list of IP addresses with allowed CIDR ranges.
 
-## UID/GID
+### UID/GID
 
 This is specific to your host machine's user ID and group ID. If you run on a Unix based system then you can find these values for a user by doing the following:
 
@@ -346,7 +148,7 @@ This is specific to your host machine's user ID and group ID. If you run on a Un
 id <username>
 ```
 
-## Local Shares (Recommended)
+### Local Shares (Recommended)
 
 Mount the drives you want on your host machine and have them setup to connect on boot. Then reference those paths in your variables. Comment out what you don't need.
 
@@ -368,21 +170,21 @@ LOCAL_BOOKS_PATH="/Volumes/Books" #CHANGE_ME
 LOCAL_DOWNLOADS_PATH="/Volumes/Downloads" #CHANGE_ME
 ```
 
-## Samba
+### Samba
 
-### SMB (Samba) Shares User and Pass
+#### SMB (Samba) Shares User and Pass
 
 This is specifically for mounting network shares. If you do not need this (i.e. if the host machine mounts the drives before docker spins up) then you can comment them out.
 
-### SMB UID and GID
+#### SMB UID and GID
 
 This may or may not be the same as the UID and GID above. For that reason I have separated it into different variables (if you needed to have only readonly access for a user or something).
 
-### Network Shares
+#### Network Shares
 
 These are the IP Addresses and share names related to the network shares that you would like to mount as SMB shares.
 
-## Jellyseer
+### Jellyseer
 
 Change this to be either `jellyfin`, `emby`, or `plex`
 
@@ -390,7 +192,7 @@ Change this to be either `jellyfin`, `emby`, or `plex`
 JELLYSEER_TYPE="jellyfin" #CHANGE_ME - based on what you decide for media server
 ```
 
-## Transmission
+### Transmission
 
 The username and password is here in the env file. Please do change this and document it.
 
@@ -400,7 +202,7 @@ TRANSMISSION_USER="transmission" #CHANGE_ME
 TRANSMISSION_PASS="noissimsnart" #CHANGE_ME
 ```
 
-## Dashy
+### Dashy
 
 This is where the default configuration that ships with this project is based. This location can be changed if you would like to create a new config file, or would like to import someone else's.
 
@@ -408,7 +210,7 @@ This is where the default configuration that ships with this project is based. T
 DASHY_CONFIG_LOCATION="./dashy-config.yml"
 ```
 
-## Pihole
+### Pihole
 
 The PiHole web password is defined here. Please change this from the default.
 
@@ -416,7 +218,7 @@ The PiHole web password is defined here. Please change this from the default.
 PIHOLE_SECURE_WEB_PASSWORD="pihole"
 ```
 
-## ZWave JS and Zigbee2MQTT
+### ZWave JS and Zigbee2MQTT
 
 If you decide to use ZWaveJS and Home Assistant, you will need to setup the USB dongle for the zwave network to function:
 

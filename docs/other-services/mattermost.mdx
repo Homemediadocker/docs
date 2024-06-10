@@ -1,0 +1,167 @@
+---
+id: mattermost
+title: Mattermost
+description: Mattermost is a self hosted alternative to Slack
+sidebar_position: 4
+---
+
+## Mattermost
+
+:::info Information
+
+Mattermost is a Self hosted alternative to slack for messaging
+
+:::
+
+- Just Mattermost Commands
+
+| Type     | Command                           |
+| -------- | --------------------------------- |
+| Start    | `docker compose up mattermost -d` |
+| Shutdown | `docker compose down mattermost`  |
+
+<img src="/Home-Media-Docker/img/mattermost.png" alt="mattermost" />
+
+- Once started, mattermost should be hit from this url:
+
+|                  | URL                                                                                                           |
+| ---------------- | ------------------------------------------------------------------------------------------------------------- |
+| Non-SSL (Web UI) | http://localhost:8065                                                                                         |
+| Image            | [mattermost/mattermost-team-edition](https://hub.docker.com/r/mattermost/mattermost-team-edition)(Docker Hub) |
+
+### Mattermost Example Docker Compose
+
+```yaml
+services:
+  postgres:
+    image: postgres:${POSTGRES_IMAGE_TAG}
+    container_name: mattermost-db
+    restart: ${RESTART_POLICY}
+    security_opt:
+      - no-new-privileges:true
+    pids_limit: 100
+    read_only: true
+    tmpfs:
+      - /tmp
+      - /var/run/postgresql
+    volumes:
+      - ${POSTGRES_DATA_PATH}:/var/lib/postgresql/data
+    profiles:
+      - all
+      - mattermost
+    env_file:
+      - ./.env
+      - ../../.env
+    networks:
+      - mattermost_default
+
+  mattermost:
+    image: mattermost/${MATTERMOST_IMAGE}:${MATTERMOST_IMAGE_TAG}
+    container_name: ${MATTERMOST_CONTAINER_NAME:-mattermost}
+    depends_on:
+      - postgres
+    restart: ${RESTART_POLICY}
+    security_opt:
+      - no-new-privileges:true
+    pids_limit: 200
+    read_only: ${MATTERMOST_CONTAINER_READONLY}
+    tmpfs:
+      - /tmp
+    profiles:
+      - all
+      - mattermost
+    volumes:
+      - ${MATTERMOST_CONFIG_PATH}:/mattermost/config:rw
+      - ${MATTERMOST_DATA_PATH}:/mattermost/data:rw
+      - ${MATTERMOST_LOGS_PATH}:/mattermost/logs:rw
+      - ${MATTERMOST_PLUGINS_PATH}:/mattermost/plugins:rw
+      - ${MATTERMOST_CLIENT_PLUGINS_PATH}:/mattermost/client/plugins:rw
+      - ${MATTERMOST_BLEVE_INDEXES_PATH}:/mattermost/bleve-indexes:rw
+    env_file:
+      - ./.env
+      - ../../.env
+    networks:
+      - mattermost_default
+      - homelab
+    labels:
+      - traefik.enable=true
+      - "traefik.docker.network=home-media-docker_homelab"
+      - traefik.http.routers.mattermost.rule=Host(`${MATTERMOST_CONTAINER_NAME:-mattermost}.${PROJECT_HOSTNAME}`)
+      - traefik.http.services.mattermost.loadbalancer.server.port=${APP_PORT}
+      - traefik.http.routers.mattermost.tls=true
+      - traefik.http.middlewares.limit.buffering.maxRequestBodyBytes=500000000 # optional, only necessary for file uploads; allow 500MB
+      - traefik.http.middlewares.limit.buffering.maxResponseBodyBytes=500000000 # optional, only necessary for file uploads; allow 500MB
+      - traefik.http.middlewares.limit.buffering.memRequestBodyBytes=500000000 # optional, only necessary for file uploads; allow 500MB
+      - traefik.http.middlewares.limit.buffering.memResponseBodyBytes=500000000 # optional, only necessary for file uploads; allow 500MB
+    #  # Part for optional traefik middlewares
+    #  - traefik.http.routers.mattermost.middlewares=local-ipwhitelist@file
+```
+
+### Mattermost Example .env file
+
+```conf
+# Domain of service
+DOMAIN=mattermost.example.com
+DOCKER_VOLUME_STORAGE="../../.containers/Mattermost"
+# Container settings
+## Timezone inside the containers. The value needs to be in the form 'Europe/Berlin'.
+## A list of these tz database names can be looked up at Wikipedia
+## https://en.wikipedia.org/wiki/List_of_tz_database_time_zones
+TZ=${TIMEZONE}
+RESTART_POLICY=unless-stopped
+
+# Postgres settings
+## Documentation for this image and available settings can be found on hub.docker.com
+## https://hub.docker.com/_/postgres
+## Please keep in mind this will create a superuser and it's recommended to use a less privileged
+## user to connect to the database.
+## A guide on how to change the database user to a nonsuperuser can be found in docs/creation-of-nonsuperuser.md
+POSTGRES_IMAGE_TAG=13-alpine
+#POSTGRES_DATA_PATH=./volumes/db/var/lib/postgresql/data
+POSTGRES_DATA_PATH=${DOCKER_VOLUME_STORAGE:-/mnt/docker-volumes}/mattermost/psql
+POSTGRES_USER=mmuser
+POSTGRES_PASSWORD=mmuserpassword
+POSTGRES_DB=mattermost
+POSTGRES_HOST_AUTH_METHOD=trust
+
+# Mattermost settings
+## Inside the container the uid and gid is 2000. The folder owner can be set with
+## `sudo chown -R 2000:2000 ./volumes/app/mattermost`.
+MATTERMOST_CONFIG_PATH=${DOCKER_VOLUME_STORAGE:-/mnt/docker-volumes}/mattermost/config
+MATTERMOST_DATA_PATH=${DOCKER_VOLUME_STORAGE:-/mnt/docker-volumes}/mattermost/data
+MATTERMOST_LOGS_PATH=${DOCKER_VOLUME_STORAGE:-/mnt/docker-volumes}/mattermost/logs
+MATTERMOST_PLUGINS_PATH=${DOCKER_VOLUME_STORAGE:-/mnt/docker-volumes}/mattermost/plugins
+MATTERMOST_CLIENT_PLUGINS_PATH=${DOCKER_VOLUME_STORAGE:-/mnt/docker-volumes}/mattermost/plugins
+MATTERMOST_BLEVE_INDEXES_PATH=${DOCKER_VOLUME_STORAGE:-/mnt/docker-volumes}/mattermost/bleve-indexes
+
+## Bleve index (inside the container)
+MM_BLEVESETTINGS_INDEXDIR=/mattermost/bleve-indexes
+
+## This will be 'mattermost-enterprise-edition' or 'mattermost-team-edition' based on the version of Mattermost you're installing.
+MATTERMOST_IMAGE=mattermost-team-edition
+MATTERMOST_IMAGE_TAG=latest
+
+## Make Mattermost container readonly. This interferes with the regeneration of root.html inside the container. Only use
+## it if you know what you're doing.
+## See https://github.com/mattermost/docker/issues/18
+MATTERMOST_CONTAINER_READONLY=false
+
+## The app port is only relevant for using Mattermost without the nginx container as reverse proxy. This is not meant
+## to be used with the internal HTTP server exposed but rather in case one wants to host several services on one host
+## or for using it behind another existing reverse proxy.
+APP_PORT=8065
+
+## Configuration settings for Mattermost. Documentation on the variables and the settings itself can be found at
+## https://docs.mattermost.com/administration/config-settings.html
+## Keep in mind that variables set here will take precedence over the same setting in config.json. This includes
+## the system console as well and settings set with env variables will be greyed out.
+
+## Below one can find necessary settings to spin up the Mattermost container
+MM_SQLSETTINGS_DRIVERNAME=postgres
+MM_SQLSETTINGS_DATASOURCE=postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}?sslmode=disable&connect_timeout=10
+
+## Example settings (any additional setting added here also needs to be introduced in the docker-compose.yml)
+MM_SERVICESETTINGS_SITEURL=https://${DOMAIN}
+
+MATTERMOST_CONTAINER_NAME=mattermost
+```

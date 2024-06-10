@@ -101,6 +101,9 @@ services:
   emby:
     image: lscr.io/linuxserver/emby:latest
     container_name: ${EMBY_CONTAINER_NAME}
+    env_file:
+      - ./.env
+      - ../../.env
     environment:
       - PUID=${UID}
       - PGID=${GID}
@@ -146,6 +149,14 @@ services:
       - emby
 ```
 
+### Emby Example `.env` file
+
+```conf
+EMBY_HOST_PORT="8096"
+EMBY_HOST_PORT_SSL="8920"
+EMBY_CONTAINER_NAME="emby"
+```
+
 :::warning Heads Up!
 
 There's a lot of commented lines in the above Emby config. Most of that is fine to keep commented out. I left everything I have found in there for you to be able to pick and choose what you need based on what your host machine needs.
@@ -185,6 +196,9 @@ services:
   jellyfin:
     image: lscr.io/linuxserver/jellyfin:latest
     container_name: ${JELLYFIN_CONTAINER_NAME}
+    env_file:
+      - ./.env
+      - ../../.env
     environment:
       - PUID=${UID}
       - PGID=${GID}
@@ -192,8 +206,8 @@ services:
       # - JELLYFIN_PublishedServerUrl="${JELLYFIN_CONTAINER_NAME}.${PROJECT_HOSTNAME}" #optional
     volumes:
       - ${DEFAULT_CONTAINER_DATA_LOCATION}/Jellyfin:/config
-      - ${LOCAL_TV_PATH}:/media/Synology/Television # Media directory
-      - ${LOCAL_MOVIES_PATH}:/media/Synology/Movies # Media directory
+      - ${LOCAL_TV_PATH}:/Television # Media directory
+      - ${LOCAL_MOVIES_PATH}:/Movies # Media directory
       - ${DEFAULT_CONTAINER_DATA_LOCATION}/ssl:/ssl # Add SSL Certs to this directory
     labels:
       - "traefik.enable=true"
@@ -212,6 +226,14 @@ services:
       - homelab
     profiles:
       - jellyfin
+```
+
+### Jellyfin Example `.env` file
+
+```conf
+JELLYFIN_CONTAINER_NAME="jellyfin"
+JELLYFIN_HOST_PORT="8096"
+JELLYFIN_HOST_PORT_SSL="8920"
 ```
 
 ## Plex
@@ -240,6 +262,9 @@ services:
   plex:
     image: lscr.io/linuxserver/plex:latest
     container_name: ${PLEX_CONTAINER_NAME}
+    env_file:
+      - ./.env
+      - ../../.env
     environment:
       - PUID=${UID}
       - PGID=${GID}
@@ -265,6 +290,16 @@ services:
       - homelab
     profiles:
       - plex
+```
+
+### Plex Example `.env` file
+
+```conf
+## PLEX
+PLEX_HOST_PORT="32400"
+PLEX_CONTAINER_NAME="plex"
+PLEX_CLAIM=""
+PLEX_VERSION="docker"
 ```
 
 ## Komga
@@ -298,6 +333,9 @@ services:
   komga: ###### NEED TO CONFIGURE LIKE UBUNTU SERVER so no data is lost
     image: gotson/komga:latest
     container_name: ${KOMGA_CONTAINER_NAME}
+    env_file:
+      - ./.env
+      - ../../.env
     volumes:
       - ${DEFAULT_CONTAINER_DATA_LOCATION}/Komga/config:/config
       - ${LOCAL_BOOKS_PATH}:/data
@@ -325,4 +363,15 @@ services:
     profiles:
       - all
       - komga
+```
+
+### Komga Example `.env` file
+
+```conf
+## Komga
+KOMGA_CONTAINER_NAME="komga"
+KOMGA_HOST_PORT="8341"
+KOMGA_LIBRARIES_SCAN_STARTUP="true"
+KOMGA_JAVA_OPTS="-Xmx8g" ## 8 GB - this helps reduce times waiting for pages to process and reduces crashing
+KOMGA_REMEMBERME_KEY=""
 ```

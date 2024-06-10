@@ -23,7 +23,6 @@ Authentik is completely optional to enable, but when you do, note that only a fe
 
 This is not directly dependent on `Traefik` to run; if you don't need traefik, then remove the `- traefik` from the `depends_on` section in the `authentik-server` service.
 
-
 :::warning Head up!
 
 If you are running a project as large (or larger) than this one with multiple containers, note that you may get a container port conflict, much like Authentik and Portainer in this project.
@@ -78,7 +77,8 @@ services:
       POSTGRES_USER: ${PG_USER:-authentik}
       POSTGRES_DB: ${PG_DB:-authentik}
     env_file:
-      - ../.env
+      - ./.env
+      - ../../.env
     profiles:
       - all
       - authentik
@@ -122,9 +122,8 @@ services:
       - zauthentik
       - homelab
     env_file:
-      - ../.env
-    # ports:
-    #   - 8000:8000
+      - ./.env
+      - ../../.env
     labels:
       - "traefik.enable=true"
       - "traefik.docker.network=home-media-docker_homelab"
@@ -167,11 +166,84 @@ services:
       - ${DEFAULT_CONTAINER_DATA_LOCATION}/Authentik/certs:/certs
       - ${DEFAULT_CONTAINER_DATA_LOCATION}/Authentik/custom-templates:/templates
     env_file:
-      - ../.env
+      - ./.env
+      - ../../.env
     depends_on:
       - postgresql
       - redis
     profiles:
       - all
       - authentik
+```
+
+### Authentik Example `.env` file
+
+```conf
+##### AUTHENTIK ######
+
+# .env (in ALL)
+DOCKERDIR=${DEFAULT_CONTAINER_DATA_LOCATION}  # CHANGEME
+PUID=${UID}               # CHANGEME
+PGID=${GID}               # CHANGEME
+TZ=${TIMEZONE}
+DOMAIN=${PROJECT_HOSTNAME}    # CHANGEME
+
+
+################################################################
+# PostgreSQL
+################################################################
+POSTGRES_DB=pgauthentik
+POSTGRES_USER=authentik
+POSTGRES_PASSWORD=testing123
+PG_PASS=testing123
+
+
+################################################################
+# Authentik
+################################################################
+AUTHENTIK_REDIS__HOST=authentik_redis
+AUTHENTIK_LISTEN__HTTP=authentik-server:8000
+AUTHENTIK_LISTEN__HTTPS=authentik-server:8443
+
+AUTHENTIK_POSTGRESQL__HOST=authentik_postgresql
+AUTHENTIK_POSTGRESQL__NAME=$POSTGRES_DB
+AUTHENTIK_POSTGRESQL__USER=$POSTGRES_USER
+AUTHENTIK_POSTGRESQL__PASSWORD=$POSTGRES_PASSWORD
+
+AUTHENTIK_ERROR_REPORTING__ENABLED: "false"
+AUTHENTIK_SECRET_KEY=123123123123123123123123123123
+# WORKERS=2
+
+# SMTP Host Emails are sent to
+AUTHENTIK_EMAIL__HOST=smtp.gmail.com
+AUTHENTIK_EMAIL__PORT=587
+# Optionally authenticate (don't add quotation marks to your password)
+AUTHENTIK_EMAIL__USERNAME=CHANGEME@gmail.com
+AUTHENTIK_EMAIL__PASSWORD=/run/secrets/authelia_notifier_smtp_password
+# Use StartTLS
+AUTHENTIK_EMAIL__USE_TLS=false
+# Use SSL
+AUTHENTIK_EMAIL__USE_SSL=false
+AUTHENTIK_EMAIL__TIMEOUT=10
+# Email address authentik will send from, should have a correct @domain
+AUTHENTIK_EMAIL__FROM=CHANGEME@gmail.com
+
+#########################################################################################
+########## ENABLE MIDDLEWARES IF YOU WANT TO USE PROXY AUTHENTICATION ###################
+#########################################################################################
+# PROWLARR_AUTHENTIK_MIDDLEWARE="traefik.http.routers.${PROWLARR_CONTAINER_NAME}.middlewares=middlewares-authentik@file"
+# RADARR_AUTHENTIK_MIDDLEWARE="traefik.http.routers.${RADARR_CONTAINER_NAME}.middlewares=middlewares-authentik@file"
+# VAULTWARDEN_AUTHENTIK_MIDDLEWARE="traefik.http.routers.${VAULTWARDEN_CONTAINER_NAME}.middlewares=middlewares-authentik@file"
+# SONARR_AUTHENTIK_MIDDLEWARE="traefik.http.routers.${SONARR_CONTAINER_NAME}.middlewares=middlewares-authentik@file"
+# TRAEFIK_DASHBOARD_AUTHENTIK_MIDDLEWARE="traefik.http.routers.${TRAEFIK_CONTAINER_NAME}.middlewares=middlewares-authentik@file"
+
+
+################################################################
+# GeoIP
+################################################################
+GEOIPUPDATE_ACCOUNT_ID=CHANGEME
+GEOIPUPDATE_LICENSE_KEY=CHANGEME
+AUTHENTIK_AUTHENTIK__GEOIP=/geoip/GeoLite2-City.mmdb
+GEOIPUPDATE_EDITION_IDS=GeoLite2-City
+GEOIPUPDATE_FREQUENCY=8
 ```

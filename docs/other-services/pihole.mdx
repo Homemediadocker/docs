@@ -43,6 +43,9 @@ services:
       - "53:53/udp"
       - "67:67/udp" # Only required if you are using Pi-hole as your DHCP server
       - "${PIHOLE_HOST_PORT}:80/tcp" # Web interface -- http://<ipaddress>:${PIHOLE_HOST_PORT}/admin
+    env_file:
+      - ./.env
+      - ../../.env
     environment:
       TZ: ${TIMEZONE}
       WEBPASSWORD: ${PIHOLE_SECURE_WEB_PASSWORD}
@@ -68,4 +71,14 @@ services:
     profiles:
       - all
       - pihole
+```
+
+### PiHole Example `.env` file
+
+```conf
+## PIHOLE
+PIHOLE_HOST_PORT="8880"
+PIHOLE_CONTAINER_NAME="pihole"
+PIHOLE_SECURE_WEB_PASSWORD="pihole"
+PIHOLE_STATIC_IP_ADDRESS="192.168.1.200"
 ```

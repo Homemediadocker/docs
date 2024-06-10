@@ -51,6 +51,9 @@ services:
       - PUID=${UID}
       - PGID=${GID}
       - TZ=${TIMEZONE}
+    env_file:
+      - ./.env
+      - ../../.env
     privileged: true
     volumes:
       - ${DEFAULT_CONTAINER_DATA_LOCATION}/HomeAssistant:/config
@@ -74,6 +77,13 @@ services:
       - homeAutomation
       - all
       - homeassistant
+```
+
+### Homeassistant Example `.env` file
+
+```conf
+HOME_ASSISTANT_CONTAINER_NAME="homeassistant"
+HOME_ASSISTANT_HOST_PORT="8123"
 ```
 
 ## ZWaveJS (ZWave2MQTT)
@@ -116,6 +126,9 @@ services:
     tty: true
     stop_signal: SIGINT
     privileged: true
+    env_file:
+      - ./.env
+      - ../../.env
     environment:
       - SESSION_SECRET="|_yTXKTh4~eMs17IQ+[95|KTl6EEk6"
       # - ZWAVEJS_EXTERNAL_CONFIG=/usr/src/app/store/.config-db
@@ -138,6 +151,17 @@ services:
       - all
       - homeAutomation
       - zwavejs
+```
+
+### ZwaveJS Example `.env` file
+
+```conf
+## ZWAVE2MQTT (ZWAVEJS)
+ZWAVE_JS_CONTAINER_NAME="zwavejs"
+ZWAVE_STICK_DEVICE_PATH="/path/to/usb" #CHANGE_ME
+# ZWAVE_STICK_DEVICE_PATH="/dev/cu.usbserial-533D0042421"
+ZWAVE_JS_UI_HOST_PORT="8091"
+ZWAVE_JS_WS_HOST_PORT="3000"
 ```
 
 ### Troubleshooting ZWaveJS UI
@@ -220,6 +244,9 @@ services:
     ports:
       # Frontend port
       - ${ZIGBEE2MQTT_HOST_PORT}:8080
+    env_file:
+      - ./.env
+      - ../../.env
     environment:
       - TZ=${TIMEZONE}
     profiles:
@@ -228,5 +255,16 @@ services:
       - all
     devices:
       # Make sure this matched your adapter location
-      - ${ZIGBEE_STICK_DEVICE_PATH}:/dev/ttyACM0
+      - ${ZIGBEE_STICK_DEVICE_PATH:-/path/to/device}:/dev/ttyACM0
+```
+
+### Zigbee2MQTT Example `.env` file
+
+```conf
+## Zigbee2MQTT (Zigbee)
+
+ZIGBEE2MQTT_CONTAINER_NAME="zigbee2mqtt"
+ZIGBEE2MQTT_HOST_PORT="38080"
+ZIGBEE_STICK_DEVICE_PATH="/path/to/usb"
+#ZIGBEE_STICK_DEVICE_PATH="/dev/serial/by-id/usb-Texas_Instruments_TI_CC2531_USB_CDC\_\_\_0X00124B0018ED3DDF-if00"
 ```
