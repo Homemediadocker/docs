@@ -34,7 +34,25 @@ const config = {
     locales: ["en"],
   },
 
-  plugins: [require.resolve("@cmfcmf/docusaurus-search-local")],
+  themes: [
+    // ... Your other themes.
+    [
+      // @ts-ignore
+      require.resolve("@easyops-cn/docusaurus-search-local"),
+      /** @type {import("@easyops-cn/docusaurus-search-local").PluginOptions} */
+      // @ts-ignore
+      ({
+        // ... Your options.
+        // `hashed` is recommended as long-term-cache of index file is possible.
+        hashed: true,
+        highlightSearchTermsOnTargetPage: true,
+        // For Docs using Chinese, The `language` is recommended to set to:
+        // ```
+        // language: ["en", "zh"],
+        // ```
+      }),
+    ],
+  ],
   presets: [
     [
       "classic",
