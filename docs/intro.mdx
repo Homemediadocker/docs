@@ -25,6 +25,38 @@ Also [read this](https://docs.docker.com/compose/install/) about `Docker Compose
 
 The `docker-compose.yml` has a concept of `includes:` at the top level, which will dynamically include or parse the files based on the `docker compose config` that is used at runtime. For instance, in this project, it uses `profiles` so if you ran `COMPOSE_PROFILES=traefik,jellyfin,sonarr,radarr docker compose config`, it would only include those specific configuration yaml files in the final run. That's the most powerful part about profiles in docker, they are essentially like feature flags.
 
+:::success Impatient? Quick start here
+
+## Quick Start
+
+If you don't want to go through this whole doc site, you can quickly get started by running the following commands (once you pull the repo in).
+
+### Copy Env files
+
+```shell
+  ./scripts/copyenv.sh
+```
+
+### Spin up the containers
+
+```shell
+  COMPOSE_PROFILES=all,jellyfin docker compose up -d
+```
+
+- This will install everything for you plus a media server.
+
+### View Traefik Dashboard
+
+- go to [http://localhost:8080/dashboard#/http/routers](http://localhost:8080/dashboard#/http/routers) to see where your CNAMEs for your containers (i.e. [https://jellyfin.localhost](https://jellyfin.localhost))
+
+### Get Stuck? Read the docs!
+
+- See [Docker Info](./getting-started/docker-info.mdx#compose-profiles) for all the profiles if you only want a few services
+- See the [Environment page](./getting-started/setup-env.mdx) for setting up your different env variables. **You will probably encounter errors when spinning up containers if you just copied them without configuring anything. especially with the [VPN setup](./home-media-containers/vpn.mdx) and the [Authentik SSO Setup](./authentik-sso.mdx)**
+  - Each container has its own `.env` file generated for you to configure individually and there is a global `.env` file to configure shared options.
+
+:::
+
 ### Multiple Compose Files?
 
 This project has been refactored as of May 2024 to be more modular and have a different compose file for each service/use case. Everything is still run from the root level, but if you end up making changes to a compose file and I push an update to it, the blast radius is much smaller for conflict resolution.
