@@ -25,47 +25,49 @@ This project is built with reuse and modularity in mind. Every service is separa
 name: home-media-docker
 include:
   ####### NETWORK STUFF ########
-  - ./compose-files/traefik-compose.yml
-  - ./compose-files/authentik.yml
-  - ./compose-files/vpn.yml
-  - ./compose-files/transmission.yml ##  --profile vpn
-  - ./compose-files/duplicati.yml ## --profile vpn
-  - ./compose-files/pihole.yml ## --profile vpn
+  - ./compose-files/traefik/traefik-compose.yml
+  - ./compose-files/authentik/authentik.yml
+  - ./compose-files/vpn/vpn.yml
+  - ./compose-files/transmission/transmission.yml ##  --profile vpn
+  - ./compose-files/duplicati/duplicati.yml ## --profile vpn
+  - ./compose-files/pihole/pihole.yml ## --profile vpn
 
   ####### NOTES ########
-  - ./compose-files/bookstack.yml
+  - ./compose-files/bookstack/bookstack.yml
 
   ####### CONTAINER MANAGEMENT ########
-  - ./compose-files/portainer.yml
+  - ./compose-files/portainer/portainer.yml
 
   ####### MEDIA CONSUMPTION ########
-  - ./compose-files/emby.yml ## --profile emby
-  - ./compose-files/plex.yml ## --profile plex
-  - ./compose-files/jellyfin.yml ## --profile jellyfin
-  - ./compose-files/komga.yml
+  - ./compose-files/emby/emby.yml ## --profile emby
+  - ./compose-files/plex/plex.yml ## --profile plex
+  - ./compose-files/jellyfin/jellyfin.yml ## --profile jellyfin
+  - ./compose-files/komga/komga.yml
+  - ./compose-files/navidrome/navidrome.yml
 
   ####### MEDIA MANAGEMENT ########
-  - ./compose-files/jellyseerr.yml
-  - ./compose-files/sonarr.yml
-  - ./compose-files/radarr.yml
-  - ./compose-files/prowlarr.yml
-  - ./compose-files/jackett.yml ## --profile jackett
+  - ./compose-files/jellyseerr/jellyseerr.yml
+  - ./compose-files/sonarr/sonarr.yml
+  - ./compose-files/radarr/radarr.yml
+  - ./compose-files/lidarr/lidarr.yml
+  - ./compose-files/prowlarr/prowlarr.yml
+  - ./compose-files/jackett/jackett.yml ## --profile jackett
 
   ####### DASHBOARDS ########
-  - ./compose-files/dashy.yml
-  - ./compose-files/heimdall.yml ## --profile heimdall
+  - ./compose-files/dashy/dashy.yml
+  - ./compose-files/heimdall/heimdall.yml ## --profile heimdall
 
   ####### DOCKER VOLUMES AND NETWORK CONFIG ########
   - ./compose-files/optional-mounted-volumes.yml
   - ./compose-files/networks.yml
 
   ######## HOME AUTOMATION CONTAINERS #############
-  - ./compose-files/homeassistant.yml
-  - ./compose-files/zwavejs.yml
-  - ./compose-files/zigbee2mqtt.yml
+  - ./compose-files/homeassistant/homeassistant.yml
+  - ./compose-files/zwavejs/zwavejs.yml
+  - ./compose-files/zigbee2mqtt/zigbee2mqtt.yml
 
   ######## FAMILY STUFF ###################
-  - ./compose-files/mealie.yml
+  - ./compose-files/mealie/mealie.yml
   - ./compose-files/mattermost/mattermost.yml
   - ./compose-files/wallos/wallos.yml
 
@@ -124,12 +126,18 @@ Home-Media-Docker/
 │   ├── komga
 │   │   ├── .env-example
 │   │   └── komga.yml
+│   ├── lidarr
+│   │   ├── .env-example
+│   │   └── lidarr.yml
 │   ├── mattermost
 │   │   ├── .env-example
 │   │   └── mattermost.yml
 │   ├── mealie
 │   │   ├── .env-example
 │   │   └── mealie.yml
+│   ├── navidrome
+│   │   ├── .env-example
+│   │   └── navidrome.yml
 │   ├── networks.yml
 │   ├── optional-mounted-volumes.yml
 │   ├── pihole
@@ -221,31 +229,33 @@ COMPOSE_PROFILES=vpn,transmission,sonarr,radarr,jellyfin,dashy,homeAutomation
 
 These are all possible profile options you can use for the associated services.
 
-| **Service**           | **Profiles**                             |
-| --------------------- | ---------------------------------------- |
-| Authentik             | `authentik`,`all`                        |
-| Bookstack/BookstackDB | `bookstack`, `all`                       |
-| Dashy                 | `dashy`, `all`                           |
-| Duplicati             | `duplicati`, `all`                       |
-| Emby                  | `emby`                                   |
-| Heimdall              | `heimdall`, `all`                        |
-| Home Assistant        | `homeassistant`, `homeAutomation`, `all` |
-| Jackett               | `jackett`                                |
-| Jellyfin              | `jellyfin`                               |
-| Jellyseerr            | `jellyseerr`, `all`                      |
-| Komga                 | `komga`, `all`                           |
-| Mattermost            | `mattermost`, `all`                      |
-| Mealie                | `mealie`, `all`                          |
-| PiHole                | `pihole`, `all`                          |
-| Plex                  | `plex`                                   |
-| Portainer             | `portainer`, `all`                       |
-| Prowlarr              | `prowlarr`, `all`                        |
-| Radarr                | `radarr`, `all`                          |
-| Sonarr                | `sonarr`, `all`                          |
-| Traefik               | `traefik`, `all`                         |
-| Transmission          | `transmission`, `all`                    |
-| Vaultwarden           | `vaultwarden`, `all`                     |
-| VPN                   | `vpn`, `all`                             |
-| Wallos                | `wallos`, `all`                          |
-| Zigbee2MQTT           | `zigbee2mqtt`, `homeAutomation`, `all`   |
-| ZwaveJS               | `zwavejs`, `homeAutomation`, `all`       |
+| **Service**           | **Profiles**                                    |
+| --------------------- | ----------------------------------------------- |
+| Authentik             | `authentik`,`all`                               |
+| Bookstack/BookstackDB | `bookstack`, `all`                              |
+| Dashy                 | `dashy`, `all`                                  |
+| Duplicati             | `duplicati`, `all`                              |
+| Emby                  | `emby`                                          |
+| Heimdall              | `heimdall`, `all`                               |
+| Home Assistant        | `homeassistant`, `homeAutomation`, `all`        |
+| Jackett               | `jackett`                                       |
+| Jellyfin              | `jellyfin`                                      |
+| Jellyseerr            | `jellyseerr`, `all`                             |
+| Komga                 | `komga`, `all`                                  |
+| Lidarr                | `lidarr`, `all`                                 |
+| Mattermost            | `mattermost`, `all`                             |
+| Mealie                | `mealie`, `all`                                 |
+| Navidrome             | `navidrome`, `all`                              |
+| PiHole                | `pihole`, `all`                                 |
+| Plex                  | `plex`                                          |
+| Portainer             | `portainer`, `all`                              |
+| Prowlarr              | `prowlarr`, `all`, `sonarr`, `radarr`, `lidarr` |
+| Radarr                | `radarr`, `all`                                 |
+| Sonarr                | `sonarr`, `all`                                 |
+| Traefik               | `traefik`, `all`                                |
+| Transmission          | `transmission`, `all`                           |
+| Vaultwarden           | `vaultwarden`, `all`                            |
+| VPN                   | `vpn`, `all`                                    |
+| Wallos                | `wallos`, `all`                                 |
+| Zigbee2MQTT           | `zigbee2mqtt`, `homeAutomation`, `all`          |
+| ZwaveJS               | `zwavejs`, `homeAutomation`, `all`              |
