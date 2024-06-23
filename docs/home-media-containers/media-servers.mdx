@@ -375,3 +375,75 @@ KOMGA_LIBRARIES_SCAN_STARTUP="true"
 KOMGA_JAVA_OPTS="-Xmx8g" ## 8 GB - this helps reduce times waiting for pages to process and reduces crashing
 KOMGA_REMEMBERME_KEY=""
 ```
+## Navidrome
+
+:::info Information
+- Dedicated Music Server
+- This is not included in the media server profiles, but will spin up with the rest of the docker containers.
+:::
+
+- Just Navidrome Commands
+- Navidrome is a selfhosted alternative to something like spotify
+
+| Type     | Command                      |
+| -------- | ---------------------------- |
+| Start    | `docker compose up navidrome -d` |
+| Shutdown | `docker compose down navidrome`  |
+
+<img src="/Home-Media-Docker/img/navidrome.png" alt="navidrome" />
+
+- Once started, navidrome should be hit from this url
+
+|         | URL                                                                             |
+| ------- | ------------------------------------------------------------------------------- |
+| Non-SSL | http://localhost:4533                                                           |
+| Image   | [deluan/navidrome](https://hub.docker.com/r/deluan/navidrome)                           |
+| Docs    | [Navidrome Docs](https://www.navidrome.org/docs/overview/) |
+
+### Navidrome Example Docker Compose
+
+```yaml
+services:
+  navidrome:
+    container_name: ${NAVIDROME_CONTAINER_NAME:-navidrome}
+    image: deluan/navidrome:latest
+    ports:
+      - "${NAVIDROME_HOST_PORT:-4533}:4533"
+    env_file:
+      - ./.env
+      - ../../.env
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.${NAVIDROME_CONTAINER_NAME}.rule=Host(`${NAVIDROME_CONTAINER_NAME}.${PROJECT_HOSTNAME}`)"
+      - "traefik.http.routers.${NAVIDROME_CONTAINER_NAME}.entrypoints=https"
+      - "traefik.http.routers.${NAVIDROME_CONTAINER_NAME}.tls=true"
+      - "traefik.http.services.${NAVIDROME_CONTAINER_NAME}.loadbalancer.server.port=${NAVIDROME_HOST_PORT}"
+      ## Middlewares
+      - ${NAVIDROME_AUTHENTIK_MIDDLEWARE:-}
+    environment:
+      # Optional: put your config options customization here. Examples:
+      ND_SCANSCHEDULE: ${NAVIDROME_SCANSCHEDULE:-1h}
+      ND_LOGLEVEL: ${NAVIDROME_LOG_LEVEL:-info}  
+      ND_BASEURL: "${NAVIDROME_BASEURL:-}"
+      ND_ENABLESHARING: ${NAVIDROME_ENABLE_SHARING:-false}
+    networks:
+      - homelab
+    volumes:
+      - "${DEFAULT_CONTAINER_DATA_LOCATION}/Navidrome:/data"
+      - "${LOCAL_MUSIC_PATH:-../lidarr/.local/music}:/music:ro"
+    profiles:
+      - navidrome
+      - all
+```
+
+### Navidrome Example `.env` file
+
+```conf
+## Navidrome
+NAVIDROME_CONTAINER_NAME="navidrome"
+NAVIDROME_HOST_PORT="4533"
+NAVIDROME_SCANSCHEDULE="1h"
+NAVIDROME_LOG_LEVEL="info"
+NAVIDROME_BASEURL=""
+NAVIDROME_ENABLE_SHARING=true
+```
