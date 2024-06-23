@@ -143,3 +143,69 @@ services:
 RADARR_HOST_PORT="7878"
 RADARR_CONTAINER_NAME="radarr"
 ```
+
+## Lidarr
+
+- Just Lidarr Commands
+- Lidarr is a Music Grabber and automation utility
+- It is mobile responsive but if you want an app for all of this, you can add Lidarr as a client in this App on Android: [nzb360](https://nzb360.com/).
+- This is cross platform, but achieves a similar result: [LunaSea](https://www.lunasea.app/)
+
+| Type     | Command                       |
+| -------- | ----------------------------- |
+| Start    | `docker compose up lidarr -d` |
+| Shutdown | `docker compose down lidarr`  |
+
+<img src="/Home-Media-Docker/img/lidarr.png" alt="lidarr" />
+
+- Once started, Lidarr should be hit from this url:
+
+|         | URL                                                                     |
+| ------- | ----------------------------------------------------------------------- |
+| Non-SSL | http://localhost:8686                                                   |
+| Image   | [linuxserver/lidarr](https://docs.linuxserver.io/images/docker-lidarr/) |
+
+### Lidarr Example Docker Compose
+
+```yaml
+services:
+  lidarr:
+    image: lscr.io/linuxserver/lidarr:latest
+    container_name: ${LIDARR_CONTAINER_NAME:-lidarr}
+    env_file:
+      - ./.env
+      - ../../.env
+    environment:
+      - PUID=${UID}
+      - PGID=${GID}
+      - TZ=${TIMEZONE}
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.${LIDARR_CONTAINER_NAME}.rule=Host(`${LIDARR_CONTAINER_NAME}.${PROJECT_HOSTNAME}`)"
+      - "traefik.http.routers.${LIDARR_CONTAINER_NAME}.entrypoints=https"
+      - "traefik.http.routers.${LIDARR_CONTAINER_NAME}.tls=true"
+      - "traefik.http.services.${LIDARR_CONTAINER_NAME}.loadbalancer.server.port=${LIDARR_HOST_PORT}"
+      ## Middlewares
+      - ${LIDARR_AUTHENTIK_MIDDLEWARE:-}
+    volumes:
+      - ${DEFAULT_CONTAINER_DATA_LOCATION}/Lidarr:/config
+      - ${LOCAL_MUSIC_PATH:-./.local/music}:/music #optional
+      - ${LOCAL_DOWNLOADS_PATH:-./.local/downloads}:/downloads #optional
+    ports:
+      - ${LIDARR_HOST_PORT:-8686}:8686
+    restart: unless-stopped
+    networks:
+      - homelab
+    depends_on:
+      - prowlarr
+    profiles:
+      - lidarr
+      - all
+```
+
+### Lidarr Example `.env` file
+
+```conf
+LIDARR_CONTAINER_NAME="lidarr"
+LIDARR_HOST_PORT="8686"
+```
