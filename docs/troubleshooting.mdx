@@ -84,7 +84,7 @@ Commonly on Linux systems, there is a firewall installed that blocks things (UFW
 
 :::info Pro Tip!
 
-I created a little bash script to run as a cron  after my system reboots in the event that the docker daemon assigns my containers a new IP Address. This could affect their ability to be allowed through the firewall. 
+I created a little bash script to run as a cron after my system reboots in the event that the docker daemon assigns my containers a new IP Address. This could affect their ability to be allowed through the firewall.
 
 `fixUfwDockerPermissions.sh`----
 
@@ -152,7 +152,7 @@ Docker Compose won't start the containers for some reason:
 :::info Information
 
 - This may very well be due to the apparmor installed with ubuntu as a security measure. AppArmor is part of snapd baked into Ubuntu. [See here](https://wiki.archlinux.org/title/Snap#:~:text=snapd%20is%20a%20REST%20API,enabled%20in%20the%20default%20kernel.) for more info around snapd and AppArmor.
-- This can cause containers to fail to start/stop due to the app armor profile not being setup properly. If you are comfortable setting up an app-armor profile, you can do that, or disable it.
+- This can cause containers to fail to start/stop due to the app armor profile not being setup properly. If you are comfortable setting up an [app-armor profile](https://ubuntu.com/tutorials/beginning-apparmor-profile-development#1-overview), you can do that, or disable it.
 - To disable apparmor, follow these steps:
 
 ```bash
