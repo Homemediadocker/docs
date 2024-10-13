@@ -29,6 +29,20 @@ First and foremost -- [READ THE DOCS](https://doc.traefik.io/traefik/) - they ar
 
 Every container is already setup for basic use of traefik and SSL out of the box, all you have to do is enable traefik.
 
+:::info Traefik Port Detection
+
+Traefik retrieves the private IP and port of containers from the Docker API.
+
+Port detection for private communication works as follows:
+
+- If a container exposes a single port, then Traefik uses this port.
+- If a container exposes multiple ports, then Traefik uses the lowest port. E.g. if `80` and `8080` are exposed, Traefik will use `80`.
+- If a container does not expose any port, or the selection from multiple ports does not fit, then you must manually specify which port Traefik should use for communication by using the label `traefik.http.services.<service_name>.loadbalancer.server.port`
+
+See [Traefik Docs](https://doc.traefik.io/traefik/providers/docker/#port-detection) for more information. 
+
+:::
+
 **Enable Traefik Project Wide for Scripts**
 
 ```shell
