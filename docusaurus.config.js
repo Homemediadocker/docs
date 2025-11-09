@@ -99,6 +99,11 @@ const config = {
           },
           // { to: "/blog", label: "Blog", position: "left" },
           {
+            href: "https://buymeacoffee.com/homemediadocker",
+            label: "Buy Me a Coffee",
+            position: "right",
+          },
+          {
             href: "https://github.com/Homemediadocker/Home-Media-Docker",
             label: "GitHub",
             position: "right",
