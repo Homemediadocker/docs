@@ -31,19 +31,15 @@ The `docker-compose.yml` has a concept of `includes:` at the top level, which wi
 
 If you don't want to go through this whole doc site, you can quickly get started by running the following commands (once you pull the repo in).
 
-### Copy Env files
-
-```shell
-  ./scripts/copyenv.sh
+```bash
+$ ./quick-start.sh
 ```
 
-### Spin up the containers
+- This will install everything for you plus a media server, create all of your .env files, and fill in some of the blanks for you. Just follow the prompts. 
 
-```shell
-  COMPOSE_PROFILES=all,jellyfin docker compose up -d
-```
+- This is a barebones Home Media Docker setup. What started it all. 
 
-- This will install everything for you plus a media server.
+- If you want to modify these quick-start containers, see the [.env-example](https://github.com/Homemediadocker/Home-Media-Docker/blob/main/.env-example#L26) file and edit prior to running the quick-start. For more info, see [Docker Compose Profile Options](./getting-started/docker-info.mdx#compose-profiles) for all available features/containers and info about Compose Profiles.
 
 ### View Traefik Dashboard
 

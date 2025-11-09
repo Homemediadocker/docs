@@ -28,7 +28,7 @@ Literally everything in the docker compose files are variablized as much as poss
 
 ```bash
 ## CONTAINER  DATA LOCATION
-# This will place the container data in the current repo location.
+# This will place the container data in the current repo location. 
 # You can change this and all data will be placed in that location.
 DEFAULT_CONTAINER_DATA_LOCATION="../../.containers" #CHANGE_ME if you want to house your data elsewhere outside of this project directory e.g. a network volume /media/my-network-smb/container-data
 PROJECT_HOSTNAME="localhost" #CHANGE_ME if you are hosting outside of your local machine
@@ -38,7 +38,7 @@ CF_API_EMAIL="" #CHANGE_ME
 CF_DNS_API_TOKEN="" #CHANGE_ME
 ACME_DNS_CHALLENGE_PROVIDER="cloudflare" #CHANGE_ME
 TRAEFIK_TLS_CERTRESOLVER="cloudflare" #CHANGE_ME
-TRAEFIK_DASHBOARD_CREDENTIALS=admin:$$2y$$05$$cqTXRio8juH740Wo7m4y5OWFbQKB0eTaHexKPYmssn4qctTe8ElQe #CHANGE_ME
+TRAEFIK_DASHBOARD_CREDENTIALS=admin:$$2y$$05$$cqTXRio8juH740Wo7m4y5OWFbQKB0eTaHexKPYmssn4qctTe8ElQe #CHANGE_ME ### Not needed if you use the TRAEFIK_AUTHENTIK_MIDDLEWARE variable (authentik SSO) 
 TRAEFIK_NETLIFY_TOKEN="asdfasdfasdfasdfasdfasdfasdfasdf" #CHANGE_ME
 
 ## COMPOSE_PROFILES ---- Use this variable to select which containers you would like to spin up.
@@ -49,7 +49,10 @@ TRAEFIK_NETLIFY_TOKEN="asdfasdfasdfasdfasdfasdfasdfasdf" #CHANGE_ME
 # COMPOSE_PROFILES=all,jellyfin
 
 ## Or just individually comma separate your services.
-COMPOSE_PROFILES=bookstack,dashy,duplicati,jellyseerr,komga,pihole,portainer,prowlarr,radarr,sonarr,transmission,vpn,jellyfin,homeassistant,zwavejs,zigbee2mqtt,mealie
+#COMPOSE_PROFILES=bookstack,dashy,duplicati,jellyseerr,komga,pihole,portainer,prowlarr,radarr,sonarr,transmission,vpn,jellyfin,homeassistant,zwavejs,zigbee2mqtt,mealie,lidarr
+
+## This is an example for quickstart
+COMPOSE_PROFILES=jellyseerr,portainer,prowlarr,flaresolverr,radarr,sonarr,transmission,vpn,jellyfin
 
 ### ENABLE TRAEFIK - keep COMPOSE_PROFILES above
 COMPOSE_PROFILES=${COMPOSE_PROFILES},traefik ## Not required but recommeneded for reverse proxy
@@ -67,7 +70,7 @@ COMPOSE_PROFILES=${COMPOSE_PROFILES},traefik ## Not required but recommeneded fo
 ## User Host Machine - unix machines can find this by doing `id <username>`
 UID="1000" #CHANGE_ME
 GID="1000" #CHANGE_ME
-TIMEZONE="America/Chicago" #CHANGE_ME - This is Central Time Zone by default
+TIMEZONE="America/New_York" #CHANGE_ME - This is Eastern Time Zone by default
 
 ## Local Paths
 LOCAL_MOVIES_PATH="/Volumes/Movies" #CHANGE_ME
@@ -96,6 +99,56 @@ DUPLICATI_HOST_PORT="8200"
 TRANSMISSION_HOST_PORT="9091"
 TRANSMISSION_SEED_DISCOVERY_PORT_TCP="51413"
 TRANSMISSION_SEED_DISCOVERY_PORT_UDP="51413"
+
+############################################
+########## CONTAINER NAMES #################
+############################################
+BOOKSTACK_APP_CONTAINER_NAME="notes"
+BOOKSTACK_DB_CONTAINER_NAME="bookstack_db"
+DASHY_CONTAINER_NAME="dashy"
+DUPLICATI_CONTAINER_NAME="duplicati"
+EMBY_CONTAINER_NAME="emby"
+HEIMDALL_CONTAINER_NAME="heimdall"
+HOME_ASSISTANT_CONTAINER_NAME="homeassistant"
+JACKETT_CONTAINER_NAME="jackett"
+JELLYFIN_CONTAINER_NAME="jellyfin"
+JELLYSEERR_CONTAINER_NAME="jellyseerr"
+KOMGA_CONTAINER_NAME="komga"
+PIHOLE_CONTAINER_NAME="pihole"
+PLEX_CONTAINER_NAME="plex"
+PORTAINER_CONTAINER_NAME="portainer"
+PROWLARR_CONTAINER_NAME="prowlarr"
+RADARR_CONTAINER_NAME="radarr"
+SONARR_CONTAINER_NAME="sonarr"
+TRANSMISSION_CONTAINER_NAME="transmission"
+TRAEFIK_CONTAINER_NAME="traefik"
+VPN_CONTAINER_NAME="vpn"
+VAULTWARDEN_CONTAINER_NAME="vaultwarden"
+ZIGBEE2MQTT_CONTAINER_NAME="zigbee2mqtt"
+ZWAVE_JS_CONTAINER_NAME="zwavejs"
+
+## THESE MUST BE HERE IN THE ROOT .ENV BECAUSE THE NESTED CONTAINERS DON'T KNOW ABOUT THE VARIABLES IF THEY ARE IN AUTHENTIK'S .ENV
+#########################################################################################
+########## ENABLE MIDDLEWARES IF YOU WANT TO USE PROXY AUTHENTICATION ###################
+#########################################################################################
+# PROWLARR_AUTHENTIK_MIDDLEWARE="traefik.http.routers.${PROWLARR_CONTAINER_NAME}.middlewares=middlewares-authentik@file" 
+# RADARR_AUTHENTIK_MIDDLEWARE="traefik.http.routers.${RADARR_CONTAINER_NAME}.middlewares=middlewares-authentik@file" 
+# SONARR_AUTHENTIK_MIDDLEWARE="traefik.http.routers.${SONARR_CONTAINER_NAME}.middlewares=middlewares-authentik@file" 
+# DASHY_AUTHENTIK_MIDDLEWARE="traefik.http.routers.${DASHY_CONTAINER_NAME}.middlewares=middlewares-authentik@file" 
+# TRAEFIK_AUTHENTIK_MIDDLEWARE="traefik.http.routers.${TRAEFIK_CONTAINER_NAME}-secure.middlewares=middlewares-authentik@file" 
+# VAULTWARDEN_AUTHENTIK_MIDDLEWARE="traefik.http.routers.${VAULTWARDEN_CONTAINER_NAME}.middlewares=middlewares-authentik@file" 
+# FIREFOX_AUTHENTIK_MIDDLEWARE="traefik.http.routers.firefox.middlewares=middlewares-authentik@file"
+# MEALIE_AUTHENTIK_MIDDLEWARE="traefik.http.routers.mealie.middlewares=middlewares-authentik@file"
+# EMBY_CROWDSEC_MIDDLEWARE="traefik.http.routers.${EMBY_CONTAINER_NAME}.middlewares=crowdsec-bouncer@file"
+# AUTHENTIK_CROWDSEC_MIDDLEWARE="traefik.http.routers.authentik-server.middlewares=crowdsec-bouncer@file"
+
+#### FAIL2BAN ####
+# AUTHENTIK_FAIL2BAN_MIDDLEWARE="traefik.http.routers.authentik.middlewares=middlewares-fail2ban@file"
+# EMBY_FAIL2BAN_MIDDLEWARE="traefik.http.routers.${EMBY_CONTAINER_NAME}.middlewares=middlewares-fail2ban@file"
+# PLEX_FAIL2BAN_MIDDLEWARE="traefik.http.routers.${PLEX_CONTAINER_NAME}.middlewares=middlewares-fail2ban@file"
+# JELLYFIN_FAIL2BAN_MIDDLEWARE="traefik.http.routers.${JELLYFIN_CONTAINER_NAME}.middlewares=middlewares-fail2ban@file"
+# JELLYSEERR_FAIL2BAN_MIDDLEWARE="traefik.http.routers.${JELLYSEERR_CONTAINER_NAME}.middlewares=middlewares-fail2ban@file"
+# KOMGA_FAIL2BAN_MIDDLEWARE="traefik.http.routers.${KOMGA_CONTAINER_NAME}.middlewares=middlewares-fail2ban@file"
 
 ```
 

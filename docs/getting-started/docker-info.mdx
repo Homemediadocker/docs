@@ -25,12 +25,14 @@ This project is built with reuse and modularity in mind. Every service is separa
 name: home-media-docker
 include:
   ####### NETWORK STUFF ########
+  - ./compose-files/flaresolverr/flaresolverr.yml
   - ./compose-files/traefik/traefik-compose.yml
   - ./compose-files/authentik/authentik.yml
   - ./compose-files/vpn/vpn.yml
   - ./compose-files/transmission/transmission.yml ##  --profile vpn
   - ./compose-files/duplicati/duplicati.yml ## --profile vpn
   - ./compose-files/pihole/pihole.yml ## --profile vpn
+  - ./compose-files/firefox/firefox.yml ## local browser
 
   ####### NOTES ########
   - ./compose-files/bookstack/bookstack.yml
@@ -65,6 +67,9 @@ include:
   - ./compose-files/homeassistant/homeassistant.yml
   - ./compose-files/zwavejs/zwavejs.yml
   - ./compose-files/zigbee2mqtt/zigbee2mqtt.yml
+
+  ######### OTHER HOME CONTAINERS ###############
+  - ./compose-files/homebox/homebox.yml
 
   ######## FAMILY STUFF ###################
   - ./compose-files/mealie/mealie.yml
