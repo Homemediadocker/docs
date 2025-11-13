@@ -131,6 +131,37 @@ I found this very useful because I migrated my setup from windows to Linux (debi
 
 [Migrating Sonarr and Radarr from Windows 10 to unRAID](https://www.reddit.com/r/unRAID/comments/ibgone/migrating_sonarr_and_radarr_from_windows_10_to/) - This proved to be useful in my docker setup which runs on an Ubuntu 22.04 host machine.
 
+## Traefik and Portainer Don't work properly
+
+If Traefik and Portainer aren't functioning (check both), this could be related to the `/var/run/docker.sock` - In Docker 29.0.0, Earlier versions of Traefik and Portainer failed to function due to compatibility with the new Major version of Docker.
+
+- Portainer will show the stack ans `UP` but when you try to click into the stack, it will fail to connect. 
+- Traefik will not recognize any labelled containers in the stack.
+
+### Traefik and Portainer Resolution
+An issue was posted in [portainer/portainer/#12925](https://github.com/portainer/portainer/issues/12925) that was having this issue. [This comment](https://github.com/portainer/portainer/issues/12925#issuecomment-3516549977) was the fix.
+
+:::info TLDR
+
+You can fix it without downgrading Docker or Portainer. You can add the variable DOCKER_MIN_API_VERSION=1.24 to the docker service config ( this fixes the issue for Traefik aswell if you are using this, since traefik uses the version 1.24 )
+
+`systemctl edit docker.service`
+
+Add this part above the line ### Lines below this comment will be discarded:
+
+```shell
+[Service]
+Environment=DOCKER_MIN_API_VERSION=1.24
+```
+Save the file and exit
+`systemctl restart docker`
+
+Edit: We are using Version: 2.27.3 LTS Community Edition and did not encounter any issues whatsoever after doing that.
+
+Edit 2: If you are using the Business Edition it seems that there still is an issue with you not being able to see the docker-compose.yml files for your stacks. The CE edition does not have this issue.
+
+:::
+
 ## Docker Errors and Can't ever completely come up
 
 Docker Compose won't down the containers:
