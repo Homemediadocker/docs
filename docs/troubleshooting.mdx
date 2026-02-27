@@ -121,6 +121,30 @@ MacOS has something similar in System Preferences, but if you are a CLI person, 
 
 Another common problem would be if you are using `network_mode: host` - this basically removes any exposed custom ports from your docker compose file. Check that you are referring to the default exposed ports or exposing them on another container that is not `network_mode: host` - you will want the container you are wanting to be `network_mode: bridge` or just remove that key and `bridge` is the default.
 
+
+## Containers that Depend on Network Shares Exiting (Code 128)
+
+This can happen on newer machines that run much faster and can chew threw all the startup mess faster than the fstab can run to mount the drives. If this happens, there are a few options. You can bind the network share directly in docker compose files as a volume and reference it, or you can update the docker service to wait 20-30 seconds before spinning up the containers. 
+
+```bash
+$ sudo systemctl edit docker.service
+```
+
+Then update the file like this:
+
+```bash
+## Editing /etc/systemd/system/docker.service.d/override.conf
+### Anything between here and the comment below will become the contents of the drop-in file
+
+[Service]
+Environment=DOCKER_MIN_API_VERSION=1.24
+ExecStartPre=/bin/sleep 30
+
+### Edits below this comment will be discarded
+```
+
+This basically tells the docker service to count to 30 before it does anything. This fixed the issue for me. You can also try to wait for the network devices to become available but i found that to be flaky.
+
 ### Transmission Behind a VPN Connection - No External Access
 
 I have yet to get this work with a true external connection via ddns or with my public IP address. Instead, I have had luck setting up my router VPN and using [OpenVPN Connect](https://openvpn.net/client/) on my smartphone to access Transmission as if I was on my LAN at home, even when I am away. It was super easy to setup with my router, if you have a way to setup an openvpn connection to your server, then go for it. I will try to add a VPN server that is accessible via this docker setup, but for now you are on your own.
