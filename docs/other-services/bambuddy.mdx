@@ -29,7 +29,7 @@ BamBuddy is a self-hosted companion web app for [Bambu Lab](https://bambulab.com
 
 |                    | URL                                          |
 | ------------------ | -------------------------------------------- |
-| Non-SSL (Web UI)   | http://localhost:${PORT:-8000}               |
+| Non-SSL (Web UI)   | `http://localhost:${PORT:-8000}`             |
 | Image              | [maziggy/bambuddy](https://github.com/maziggy/bambuddy) (GitHub) |
 
 > The `bambuddy` container is set to bind privileged ports (`322`, `990`) for FTPS and the RTSPS camera proxy via `cap_add: NET_BIND_SERVICE`, so it can run as a non-root user. On Linux, use `network_mode: host` for reliable printer discovery and camera streaming.
