@@ -1,0 +1,70 @@
+---
+id: steam-recommender
+title: Steam Recommender
+description: Steam Game Recommender — a self-hosted Steam library recommendation web app
+sidebar_position: 9
+---
+
+## Steam Recommender
+
+:::info Information
+
+Steam Recommender is a self-hosted web app that gives you game recommendations based on your Steam library. It is exposed through Traefik at `steam-game-recommender.${PROJECT_HOSTNAME}` and protected by Authentik SSO.
+
+- Lightweight single-container service — no database required for basic operation.
+- Steam API keys are stored **per-user inside the application**, so there are no required environment variables to run it.
+- Data is persisted to a `data` volume so your recommendations and settings survive restarts.
+
+:::
+
+- Just Steam Recommender Commands
+
+| Type     | Command                                    |
+| -------- | ------------------------------------------ |
+| Start    | `docker compose up steam-recommender -d`   |
+| Shutdown | `docker compose down steam-recommender`    |
+
+- Once started, it should be hit from this url:
+
+|                    | URL                                                  |
+| ------------------ | ---------------------------------------------------- |
+| Non-SSL (Web UI)   | http://localhost:3030                                |
+| Image              | `lquincarter/steam-game-recommender`                 |
+
+> The web UI is published through Traefik, so in normal operation you reach it at `https://steam-game-recommender.${PROJECT_HOSTNAME}` rather than the raw host port `3030`.
+
+### Steam Recommender Example Docker Compose
+
+```yaml
+services:
+  steam-recommender:
+    image: lquincarter/steam-game-recommender:latest
+    env_file:
+      - ./.env
+      - ../../.env
+    ports:
+      - "3030:80"
+    restart: unless-stopped
+    container_name: steam-game-recommender
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.steam-game-recommender.rule=Host(`steam-game-recommender.${PROJECT_HOSTNAME}`)"
+      - "traefik.http.routers.steam-game-recommender.entrypoints=https"
+      - "traefik.http.routers.steam-game-recommender.tls=true"
+      - "traefik.http.services.steam-game-recommender.loadbalancer.server.port=80"
+      - ${STEAM_RECOMMENDER_AUTHENTIK_MIDDLEWARE:-}
+    profiles:
+      - all
+      - steam-recommender
+    networks:
+      - homelab
+    volumes:
+      - ${DEFAULT_CONTAINER_DATA_LOCATION}/steam-recommender/data:/data
+```
+
+:::warning Heads Up!
+
+- No `.env` variables are required for basic operation — Steam API keys are entered per-user in the app's UI.
+- Leave the `STEAM_RECOMMENDER_AUTHENTIK_MIDDLEWARE` line as-is so the app is protected by Authentik SSO when configured.
+
+:::

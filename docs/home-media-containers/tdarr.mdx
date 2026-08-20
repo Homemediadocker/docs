@@ -1,0 +1,186 @@
+---
+id: tdarr
+title: Tdarr
+description: Tdarr automated media transcoding and library health
+sidebar_position: 8
+---
+
+## Tdarr
+
+:::info Information
+
+Tdarr is an open-source, cross-platform, web-based application for automating your media library. It works hand in hand with the *arr stack and your media server to keep your library healthy and optimized:
+
+- Converts your media to a standardized, space-saving format automatically using FFmpeg.
+- Monitors and processes files based on user-created **plugins** (transcode, remux, health-check, etc.).
+- Can run on CPU, Intel/AMD GPU (VAAPI), or NVIDIA GPUs.
+- Removes the need to manually tweak every file once your plugin stack is set up.
+
+:::
+
+- Just Tdarr Commands
+
+| Type     | Command                        |
+| -------- | ------------------------------ |
+| Start    | `docker compose up tdarr -d`   |
+| Shutdown | `docker compose down tdarr`    |
+
+- Once started, Tdarr should be hit from this url:
+
+|                    | URL                                                    |
+| ------------------ | ------------------------------------------------------ |
+| Non-SSL (Web UI)   | http://localhost:${TDARR_WEBUI_PORT:-8265}             |
+| Image              | [haveagitgat/tdarr](https://github.com/HaveAGitGat/Tdarr) (GitHub) |
+
+> Tdarr exposes two ports: the **Web UI** port (`${TDARR_WEBUI_PORT:-8265}`) for the browser UI and the **Server** port (`${TDARR_SERVER_PORT:-8266}`) used by nodes to talk to the server. The node example below uses `network_mode: service:tdarr`, so it shares the server's network and does not need its own published ports.
+
+### Tdarr Example Docker Compose
+
+```yaml
+services:
+  tdarr:
+    container_name: ${TDARR_CONTAINER_NAME:-tdarr}
+    image: ghcr.io/haveagitgat/tdarr:latest
+    restart: unless-stopped
+    ports:
+      - ${TDARR_WEBUI_PORT:-8265}:8265 # webUI port
+      - ${TDARR_SERVER_PORT:-8266}:8266 # server port
+    env_file:
+      - ../../.env
+      - ./.env
+    environment:
+      - TZ=${TZ}
+      - PUID=${PUID}
+      - PGID=${PGID}
+      - UMASK_SET=${UMASK_SET:-0022}
+      - serverIP=${TDARR_SERVER_IP:-0.0.0.0}
+      - serverPort=${TDARR_SERVER_PORT:-8266}
+      - webUIPort=${TDARR_WEBUI_PORT:-8265}
+      - internalNode=${TDARR_INTERNAL_NODE:-false}
+      - inContainer=${TDARR_IN_CONTAINER:-false}
+      - ffmpegVersion=${TDARR_FFMPEG_VERSION}
+      - nodeName=${TDARR_NODE_NAME:-tdarr}
+      - nodeType=${TDARR_NODE_TYPE}
+      - priority=${TDARR_PRIORITY}
+      - apiKey=${TDARR_API_KEY}
+      - auth=${TDARR_AUTH:-false}
+      - authType=${TDARR_AUTH_TYPE:-}
+      - openBrowser=${TDARR_OPEN_BROWSER:-false}
+      - startPaused=${TDARR_START_PAUSED:-false}
+      - transcodegpuWorkers=${TDARR_TRANSCODE_GPU_WORKERS:-1}
+      - transcodecpuWorkers=${TDARR_TRANSCODE_CPU_WORKERS:-1}
+      - healthcheckgpuWorkers=${TDARR_HEALTHCHECK_GPU_WORKERS:-1}
+      - healthcheckcpuWorkers=${TDARR_HEALTHCHECK_CPU_WORKERS:-1}
+      - maxLogSizeMB=${TDARR_MAX_LOG_SIZE_MB}
+      - cronPluginUpdate=${TDARR_CRON_PLUGIN_UPDATE}
+      - TDARR_TRANSCODE_GPU_TYPE=vaapi
+      - TDARR_NODE_WORKDIR=/workdir
+    volumes:
+      - ${DEFAULT_CONTAINER_DATA_LOCATION}/Tdarr/ServerConfig:/app/configs
+      - /media:/media
+      - /transcode_cache:/temp
+    devices:
+      - /dev/dri:/dev/dri # Intel/AMD GPU (VAAPI) passthrough
+    # deploy:
+    #   resources:
+    #     reservations:
+    #       devices:
+    #         - driver: nvidia
+    #           count: all
+    #           capabilities: [gpu]
+    networks:
+      - homelab
+    profiles:
+      - all
+      - tdarr
+
+  # Optional extra node
+  tdarr-node:
+    container_name: tdarr-node
+    image: ghcr.io/haveagitgat/tdarr_node:latest
+    restart: unless-stopped
+    network_mode: service:tdarr
+    env_file:
+      - ../../.env
+      - ./.env
+    environment:
+      - TZ=${TZ}
+      - PUID=${PUID}
+      - PGID=${PGID}
+      - UMASK_SET=${UMASK_SET}
+      - nodeName=${TDARR_NODE_NAME_NODE}
+      - serverIP=${TDARR_SERVER_IP}
+      - serverPort=${TDARR_SERVER_PORT}
+      - inContainer=${TDARR_IN_CONTAINER}
+      - ffmpegVersion=${TDARR_FFMPEG_VERSION}
+      - nodeType=${TDARR_NODE_TYPE}
+      - priority=${TDARR_PRIORITY}
+      - cronPluginUpdate=${TDARR_CRON_PLUGIN_UPDATE}
+      - apiKey=${TDARR_API_KEY}
+      - maxLogSizeMB=${TDARR_MAX_LOG_SIZE_MB}
+      - pollInterval=${TDARR_POLL_INTERVAL}
+      - startPaused=${TDARR_START_PAUSED}
+      - transcodegpuWorkers=${TDARR_TRANSCODE_GPU_WORKERS}
+      - transcodecpuWorkers=${TDARR_TRANSCODE_CPU_WORKERS}
+      - healthcheckgpuWorkers=${TDARR_HEALTHCHECK_GPU_WORKERS}
+      - healthcheckcpuWorkers=${TDARR_HEALTHCHECK_CPU_WORKERS}
+      - TDARR_TRANSCODE_GPU_TYPE=vaapi
+      - TDARR_NODE_WORKDIR=/workdir
+    volumes:
+      - ${DEFAULT_CONTAINER_DATA_LOCATION}/Tdarr/tdarr-node:/app/configs
+      - /docker/tdarr/logs:/app/logs
+      - /media:/media
+      - /transcode_cache:/temp
+      - /opt/tdarr/workdir:/workdir
+    devices:
+      - /dev/dri:/dev/dri
+    profiles:
+      - all
+      - tdarr
+```
+
+### Tdarr Example `.env` file
+
+```conf
+## Tdarr
+TZ=America/New_York
+PUID=1000
+PGID=1000
+UMASK_SET=002
+
+# Tdarr Main Server
+TDARR_SERVER_IP=0.0.0.0
+TDARR_SERVER_PORT=8266
+TDARR_WEBUI_PORT=8265
+TDARR_INTERNAL_NODE=true
+TDARR_IN_CONTAINER=true
+TDARR_FFMPEG_VERSION=7
+TDARR_NODE_NAME=MyInternalNode
+TDARR_AUTH=false
+TDARR_OPEN_BROWSER=true
+TDARR_MAX_LOG_SIZE_MB=10
+TDARR_CRON_PLUGIN_UPDATE=
+NVIDIA_DRIVER_CAPABILITIES=all
+NVIDIA_VISIBLE_DEVICES=all
+TDARR_CONTAINER_NAME=tdarr
+
+# Tdarr Node
+TDARR_NODE_NAME_NODE=MyExternalNode
+TDARR_NODE_TYPE=mapped
+TDARR_PRIORITY=-1
+TDARR_API_KEY=
+TDARR_POLL_INTERVAL=2000
+TDARR_START_PAUSED=false
+TDARR_TRANSCODE_GPU_WORKERS=1
+TDARR_TRANSCODE_CPU_WORKERS=2
+TDARR_HEALTHCHECK_GPU_WORKERS=1
+TDARR_HEALTHCHECK_CPU_WORKERS=1
+```
+
+:::warning Heads Up!
+
+- `TDARR_TRANSCODE_GPU_TYPE` is set to `vaapi` by default. Change this (e.g. to `nvenc`) and uncomment the NVIDIA `deploy.resources` block if you want to transcode on an NVIDIA GPU. The `/dev/dri` device mapping is only needed for VAAPI/Intel/AMD.
+- The optional `tdarr-node` service uses `network_mode: service:tdarr`, so it rides on the server container's network — do **not** add `ports:` to the node.
+- Point the volume mounts (`/media`, `/transcode_cache`, etc.) at your actual media and temp paths on the host.
+
+:::
