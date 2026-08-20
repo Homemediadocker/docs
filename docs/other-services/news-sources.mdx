@@ -29,7 +29,7 @@ News Sources is a self-hosted news aggregation service. It runs as a small stack
 
 |                    | URL                                              |
 | ------------------ | ------------------------------------------------ |
-| Non-SSL (Web UI)   | http://localhost:${NEWS_FRONTEND_PORT:-8082}     |
+| Non-SSL (Web UI)   | `http://localhost:${NEWS_FRONTEND_PORT:-8082}`   |
 | Image              | `lquincarter/news-sources-backend`, `lquincarter/news-sources-frontend` |
 
 > The frontend is published through Traefik, so in normal operation you reach it at `https://${NEWS_FRONTEND_CONTAINER_NAME}.${PROJECT_HOSTNAME}` rather than the raw host port. The backend port (`${BACKEND_PORT}`) is for API/client use.
