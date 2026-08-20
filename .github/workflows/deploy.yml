@@ -1,0 +1,70 @@
+name: Deploy Docs to GitHub Pages
+
+on:
+  # Build and deploy on every push to main
+  push:
+    branches: [main]
+  # Allow manual runs from the Actions tab
+  workflow_dispatch:
+
+# Allow this workflow to write the external repo's gh-pages branch via the DEPLOY_KEY
+permissions:
+  contents: read
+
+# Ensure only one deploy runs at a time
+concurrency:
+  group: pages-deploy
+  cancel-in-progress: false
+
+jobs:
+  build:
+    name: Build Docusaurus site
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: yarn
+
+      - name: Install dependencies
+        run: yarn install --frozen-lockfile
+
+      - name: Build website
+        run: yarn build
+
+      - name: Upload build artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: build
+          path: ./build
+          if-no-files-found: error
+
+  deploy:
+    name: Deploy to Home-Media-Docker gh-pages
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download build artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: build
+          path: ./build
+
+      # The docs source lives in this repo (Homemediadocker/docs), but the live
+      # site is published at https://homemediadocker.github.io/Home-Media-Docker/
+      # from the gh-pages branch of Homemediadocker/Home-Media-Docker.
+      - name: Deploy to external repo (gh-pages)
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          # Write-capable SSH deploy key stored as a secret in THIS repo
+          deploy_key: ${{ secrets.DEPLOY_KEY }}
+          external_repository: Homemediadocker/Home-Media-Docker
+          publish_branch: gh-pages
+          publish_dir: ./build
+          user_name: Homemediadocker
+          user_email: homemediadocker@gmail.com
+          commit_message: "docs: deploy ${{ github.sha }}"
