@@ -1,0 +1,88 @@
+---
+id: bambuddy
+title: BamBuddy
+description: BamBuddy — a self-hosted companion app for Bambu Lab 3D printers
+sidebar_position: 7
+---
+
+## BamBuddy
+
+:::info Information
+
+BamBuddy is a self-hosted companion web app for [Bambu Lab](https://bambulab.com/) 3D printers. It gives you a single place to monitor your fleet, organize prints, and access your printer's camera feed without relying on the vendor cloud.
+
+- Monitors print status and progress for one or more Bambu printers.
+- Provides a web UI and an optional REST API (`/api/v3`) router.
+- Supports an optional external PostgreSQL database (uses SQLite by default).
+- Can run an optional OrcaSlicer slicer-API sidecar for slicer integration.
+
+:::
+
+- Just BamBuddy Commands
+
+| Type     | Command                           |
+| -------- | --------------------------------- |
+| Start    | `docker compose up bambuddy -d`   |
+| Shutdown | `docker compose down bambuddy`    |
+
+- Once started, BamBuddy should be hit from this url:
+
+|                    | URL                                          |
+| ------------------ | -------------------------------------------- |
+| Non-SSL (Web UI)   | http://localhost:${PORT:-8000}               |
+| Image              | [maziggy/bambuddy](https://github.com/maziggy/bambuddy) (GitHub) |
+
+> The `bambuddy` container is set to bind privileged ports (`322`, `990`) for FTPS and the RTSPS camera proxy via `cap_add: NET_BIND_SERVICE`, so it can run as a non-root user. On Linux, use `network_mode: host` for reliable printer discovery and camera streaming.
+
+### BamBuddy Example Docker Compose
+
+```yaml
+services:
+  bambuddy:
+    image: ghcr.io/maziggy/bambuddy:latest
+    container_name: bambuddy
+    cap_add:
+      - NET_BIND_SERVICE
+    networks:
+      - homelab
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.${BAMBUDDY_CONTAINER_NAME:-bambuddy}.rule=Host(`${BAMBUDDY_CONTAINER_NAME:-bambuddy}.${PROJECT_HOSTNAME}`)"
+      - "traefik.http.routers.${BAMBUDDY_CONTAINER_NAME:-bambuddy}.entrypoints=https"
+      - "traefik.http.routers.${BAMBUDDY_CONTAINER_NAME:-bambuddy}.tls=true"
+      - "traefik.http.routers.${BAMBUDDY_CONTAINER_NAME:-bambuddy}.priority=10"
+      - ${BAMBUDDY_AUTHENTIK_MIDDLEWARE:-}
+      - "traefik.http.routers.${BAMBUDDY_CONTAINER_NAME:-bambuddy}-api.rule=Host(`${BAMBUDDY_CONTAINER_NAME:-bambuddy}.${PROJECT_HOSTNAME}`) && PathPrefix(`/api/v3`)"
+    env_file:
+      - ./.env
+      - ../../.env
+    environment:
+      - PORT=${PORT:-8000}
+      - TZ=${TZ}
+      - PUID=${PUID}
+      - PGID=${PGID}
+      # External PostgreSQL (optional — SQLite by default)
+      # - DATABASE_URL=postgresql+asyncpg://bambuddy:password@db-host:5432/bambuddy
+      # Slicer API sidecar (optional — Settings → "Use Slicer API" toggles this on)
+      # - SLICER_API_URL=http://localhost:3003
+    restart: unless-stopped
+    profiles:
+      - all
+      - bambuddy
+```
+
+### BamBuddy Example `.env` file
+
+```conf
+## BamBuddy
+PORT=8000
+TZ=America/New_York
+```
+
+:::warning Heads Up!
+
+- `network_mode: host` is recommended on Linux for printer discovery and camera streaming. If you keep the default `homelab` network, your printer must be reachable from the container network.
+- Leave the `BAMBUDDY_AUTHENTIK_MIDDLEWARE` line as-is — it is injected from your global `.env` and protects the UI behind Authentik SSO when configured.
+- An external PostgreSQL database is optional; BamBuddy falls back to a local SQLite database when `DATABASE_URL` is unset.
+
+:::
